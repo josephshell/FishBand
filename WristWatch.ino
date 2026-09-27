@@ -118,10 +118,12 @@ void changeToState(State newState) {
         mainMenu.scrollForward();
       });
       setCallback(ST, PRESSED, []() {
-        Serial.println("In menu, ST was pressed");
+        Serial.print("In menu, ST was pressed. Option 1 Selected: ");
+        Serial.println(mainMenu.option1().data());
       });
       setCallback(SB, PRESSED, []() {
-        Serial.println("In menu, SB was pressed");
+        Serial.print("In menu, SB was pressed. Option 2 Selected: ");
+        Serial.println(mainMenu.option2().data());
       });
       break;
     default:

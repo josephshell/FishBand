@@ -10,7 +10,8 @@
 */
 enum State {
   DISPLAY_TIME,
-  MAIN_MENU
+  MAIN_MENU,
+  ALARMS
 };
 
 #endif

@@ -14,11 +14,9 @@ public:
   }
 };
 
-const MenuOption options[5] = {
+const MenuOption options[3] = {
   MenuOption({ "SHOW TIME" }),
-  MenuOption({ "SET ALARM" }),
-  MenuOption({ "SET TIMER" }),
-  MenuOption({ "DISPLAY BUTT" }),
+  MenuOption({ "ALARM | TIMER" }),
   MenuOption({ "GO BACK" })
 };
 const MenuOption blankLine({ "" });
