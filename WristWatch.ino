@@ -2,11 +2,15 @@
 #include <LiquidCrystal.h>
 #include <State.h>
 #include <ButtonManagement.h>
-#include <MainMenu.h>
+#include <Menu.h>
 
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(D6, D5, D7, D8, D9, D10);
-MainMenu mainMenu;
+Menu mainMenu({
+  MenuOption({ "SHOW TIME" }),
+  MenuOption({ "ALARM | TIMER" }),
+  MenuOption({ "GO BACK" })
+});
 
 int lastMoveTime = 0;
 State state = DISPLAY_TIME;
@@ -125,6 +129,9 @@ void changeToState(State newState) {
         Serial.print("In menu, SB was pressed. Option 2 Selected: ");
         Serial.println(mainMenu.option2().data());
       });
+      break;
+    case ALARMS:
+
       break;
     default:
       Serial.print("Unsupported state? ");
