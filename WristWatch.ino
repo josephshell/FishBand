@@ -4,12 +4,15 @@
 #include <ButtonManagement.h>
 #include <Menu.h>
 
+//TODO: Move state management into a new header
+void changeToState(State newState);
+
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(D6, D5, D7, D8, D9, D10);
 Menu mainMenu({
-  MenuOption({ "SHOW TIME" }),
-  MenuOption({ "ALARM | TIMER" }),
-  MenuOption({ "GO BACK" })
+  MenuOption({ "SHOW TIME" }, []() { changeToState(DISPLAY_TIME); }),
+  MenuOption({ "ALARM | TIMER" }, []() { changeToState(DISPLAY_TIME); }),
+  MenuOption({ "GO BACK" }, []() { changeToState(DISPLAY_TIME); })
 });
 
 int lastMoveTime = 0;
@@ -80,10 +83,11 @@ void printTimeToLcd() {
 */
 void displayMenu() {
   lcd.home();
-  lcd.print(mainMenu.option1().data());
+  lcd.print(mainMenu.option1Text().data());
   lcd.setCursor(0, 1);
-  lcd.print(mainMenu.option2().data());
+  lcd.print(mainMenu.option2Text().data());
 }
+
 
 /**
  * Called to change the watch to a new State [newState].
@@ -123,11 +127,13 @@ void changeToState(State newState) {
       });
       setCallback(ST, PRESSED, []() {
         Serial.print("In menu, ST was pressed. Option 1 Selected: ");
-        Serial.println(mainMenu.option1().data());
+        Serial.println(mainMenu.option1Text().data());
+        mainMenu.option1Press();
       });
       setCallback(SB, PRESSED, []() {
         Serial.print("In menu, SB was pressed. Option 2 Selected: ");
-        Serial.println(mainMenu.option2().data());
+        Serial.println(mainMenu.option2Text().data());
+        mainMenu.option2Press();
       });
       break;
     case ALARMS:
