@@ -9,6 +9,13 @@ void changeToState(State newState);
 
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(D6, D5, D7, D8, D9, D10);
+
+const uint8_t BL = D3; // Bottom left button
+const uint8_t BR = D2; // Bottom right button
+const uint8_t ST = D1; // Side top button
+const uint8_t SB = D0; // Side bottom button
+
+
 Menu mainMenu({
   MenuOption({ "SHOW TIME" }, []() { changeToState(DISPLAY_TIME); }),
   MenuOption({ "ALARM | TIMER" }, []() { changeToState(DISPLAY_TIME); }),
@@ -19,6 +26,7 @@ int lastMoveTime = 0;
 State state = DISPLAY_TIME;
 
 void setup() {
+  configureButtons(BL, BR, ST, SB);
   // Configure Serial for logging
   Serial.begin(9600);
   // Set button pins to use pullup resistor

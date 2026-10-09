@@ -9,17 +9,15 @@
 */
 const uint8_t DEBOUNCE_TIME = 100;
 
-const uint8_t BL = D3; // Bottom left button
-const uint8_t BR = D2; // Bottom right button
-const uint8_t ST = D1; // Side top button
-const uint8_t SB = D0; // Side bottom button
 
 uint8_t buttonCount = 4;
 
-uint8_t buttonPins[4] =     { BL,      BR,    ST,    SB    };
-bool buttonPressed[4] =     { false,   false, false, false };
-bool buttonJustPressed[4] = { false,   false, false, false };
-uint8_t debounceMillis[4] = { 0,       0,     0,     0     };
+uint8_t buttonPins[4] =     {};
+bool buttonPressed[4] =     {};
+bool buttonJustPressed[4] = {};
+uint8_t debounceMillis[4] = {};
+
+bool buttonsConfigured = false;
 
 void onPressed(uint8_t pin);
 void onReleased(uint8_t pin);
@@ -29,27 +27,36 @@ std::function<void()> onReleasedCallback[4] = {nullptr, nullptr, nullptr, nullpt
 
 enum ButtonState { PRESSED, RELEASED };
 
+void configureButtons(uint8_t bottomLeft, uint8_t bottomRight, uint8_t sideTop, uint8_t sideBottom) {
+  buttonPins[0] = bottomLeft;
+  buttonPins[1] = bottomRight;
+  buttonPins[2] = sideTop;
+  buttonPins[3] = sideBottom;
+  buttonsConfigured = true;
+}
+
+/*
+  Returns the index for the parameter pin, or -1 if not found
+*/
 uint8_t pinToButtonIndex(uint8_t pin) {
-  switch (pin) {
-    case BL:
-      return 0;
-    case BR:
-      return 1;
-    case ST:
-      return 2;
-    case SB:
-      return 3;
-    default:
-      Serial.print("ERROR: UNKNOWN PIN ");
-      Serial.println(pin);
+  for (int i = 0; i < buttonCount; i++) {
+    if (buttonPins[i] == pin) {
+      return i;
+    }
   }
+  return -1;
 }
 
 void setCallback(uint8_t pin, ButtonState buttonState, std::function<void()> callback) {
+  int8_t index = pinToButtonIndex(pin);
+  if (index == -1) {
+    Serial.print("Failed to set callback, pin: "); Serial.print(pin); Serial.println(" not found.");
+    return;
+  }
   if (buttonState == RELEASED) {
-    onReleasedCallback[pinToButtonIndex(pin)] = callback;
+    onReleasedCallback[index] = callback;
   } else {
-    onPressedCallback[pinToButtonIndex(pin)] = callback;
+    onPressedCallback[index] = callback;
   }
 }
 
@@ -92,7 +99,12 @@ void pollButtons() {
 void onPressed(uint8_t pin) {
   Serial.print("Button pressed: ");
   Serial.println(pin);
-  std::function<void()> callback = onPressedCallback[pinToButtonIndex(pin)];
+  int8_t index = pinToButtonIndex(pin);
+  if (index == -1) {
+    Serial.print("Unknown pin pressed: "); Serial.println(pin);
+    return;
+  }
+  std::function<void()> callback = onPressedCallback[index];
   if (callback) {
     callback();
   }
