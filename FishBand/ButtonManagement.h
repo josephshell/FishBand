@@ -2,6 +2,7 @@
 #define BUTTON_MANAGEMENT_H
 
 #include <Arduino.h>
+#include <ButtonInterface.h>
 
 /**
  * Millisecond time to wait between reading button states to insure
@@ -27,11 +28,16 @@ std::function<void()> onReleasedCallback[4] = {nullptr, nullptr, nullptr, nullpt
 
 enum ButtonState { PRESSED, RELEASED };
 
-void configureButtons(uint8_t bottomLeft, uint8_t bottomRight, uint8_t sideTop, uint8_t sideBottom) {
-  buttonPins[0] = bottomLeft;
-  buttonPins[1] = bottomRight;
-  buttonPins[2] = sideTop;
-  buttonPins[3] = sideBottom;
+void configureButtons(ButtonInterface& buttonInterface) {
+  buttonPins[0] = buttonInterface.bl();
+  buttonPins[1] = buttonInterface.br();
+  buttonPins[2] = buttonInterface.st();
+  buttonPins[3] = buttonInterface.sb();
+  // Set button pins to use pullup resistor
+  pinMode(buttonInterface.bl(), INPUT_PULLUP);
+  pinMode(buttonInterface.br(), INPUT_PULLUP);
+  pinMode(buttonInterface.st(), INPUT_PULLUP);
+  pinMode(buttonInterface.sb(), INPUT_PULLUP);
   buttonsConfigured = true;
 }
 

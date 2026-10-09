@@ -2,19 +2,16 @@
 #include <LiquidCrystal.h>
 #include <State.h>
 #include <ButtonManagement.h>
+#include <Esp32C3ButtonImpl.h>
 #include <Menu.h>
+
+ButtonInterface* bI = new Esp32C3ButtonImpl();
 
 //TODO: Move state management into a new header
 void changeToState(State newState);
 
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(D6, D5, D7, D8, D9, D10);
-
-const uint8_t BL = D3; // Bottom left button
-const uint8_t BR = D2; // Bottom right button
-const uint8_t ST = D1; // Side top button
-const uint8_t SB = D0; // Side bottom button
-
 
 Menu mainMenu({
   MenuOption({ "SHOW TIME" }, []() { changeToState(DISPLAY_TIME); }),
@@ -26,14 +23,9 @@ int lastMoveTime = 0;
 State state = DISPLAY_TIME;
 
 void setup() {
-  configureButtons(BL, BR, ST, SB);
+  configureButtons(*bI);
   // Configure Serial for logging
   Serial.begin(9600);
-  // Set button pins to use pullup resistor
-  pinMode(BL, INPUT_PULLUP);
-  pinMode(BR, INPUT_PULLUP);
-  pinMode(ST, INPUT_PULLUP);
-  pinMode(SB, INPUT_PULLUP);
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
   // Set initial state to time display
@@ -108,37 +100,37 @@ void changeToState(State newState) {
   state = newState;
   switch (newState) {
     case DISPLAY_TIME:
-      setCallback(BL, PRESSED, []() {
+      setCallback(bI->bl(), PRESSED, []() {
         Serial.println("In display time, BL was pressed. Going to main menu.");
         changeToState(MAIN_MENU);
       });
-      setCallback(BR, PRESSED, []() {
+      setCallback(bI->br(), PRESSED, []() {
         Serial.println("In display time, BR was pressed");
       });
-      setCallback(ST, PRESSED, []() {
+      setCallback(bI->st(), PRESSED, []() {
         Serial.println("In display time, ST was pressed");
       });
-      setCallback(SB, PRESSED, []() {
+      setCallback(bI->sb(), PRESSED, []() {
         Serial.println("In display time, SB was pressed");
       });
       break;
     case MAIN_MENU:
       mainMenu.clear();
-      setCallback(BL, PRESSED, []() {
+      setCallback(bI->bl(), PRESSED, []() {
         Serial.println("In menu, BL was pressed. Returning to time display");
         changeToState(DISPLAY_TIME);
       });
-      setCallback(BR, PRESSED, []() {
+      setCallback(bI->br(), PRESSED, []() {
         Serial.println("In menu, BR was pressed. Scrolling down");
         lcd.clear();
         mainMenu.scrollForward();
       });
-      setCallback(ST, PRESSED, []() {
+      setCallback(bI->st(), PRESSED, []() {
         Serial.print("In menu, ST was pressed. Option 1 Selected: ");
         Serial.println(mainMenu.option1Text().data());
         mainMenu.option1Press();
       });
-      setCallback(SB, PRESSED, []() {
+      setCallback(bI->sb(), PRESSED, []() {
         Serial.print("In menu, SB was pressed. Option 2 Selected: ");
         Serial.println(mainMenu.option2Text().data());
         mainMenu.option2Press();
