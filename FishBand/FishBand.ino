@@ -4,14 +4,14 @@
 #include <ButtonManagement.h>
 #include <Esp32C3ButtonImpl.h>
 #include <Menu.h>
+#include <Display.h>
 
-ButtonInterface* bI = new Esp32C3ButtonImpl();
+ButtonInterface* b;
 
 //TODO: Move state management into a new header
 void changeToState(State newState);
 
-// initialize the library with the numbers of the interface pins
-LiquidCrystal lcd(D6, D5, D7, D8, D9, D10);
+Display* display;
 
 Menu mainMenu({
   MenuOption({ "SHOW TIME" }, []() { changeToState(DISPLAY_TIME); }),
@@ -23,24 +23,30 @@ int lastMoveTime = 0;
 State state = DISPLAY_TIME;
 
 void setup() {
-  configureButtons(*bI);
   // Configure Serial for logging
   Serial.begin(9600);
-  // set up the LCD's number of columns and rows:
-  lcd.begin(16, 2);
+
+  // region: Configuration
+  b = new Esp32C3ButtonImpl();
+  display = new LcdDisplay();
+  // endregion
+
+  configureButtons(*b);
+  display->initialize();
+
   // Set initial state to time display
   changeToState(DISPLAY_TIME);
 }
 
 void loop() {
   pollButtons();
-  display();
+  displayByState();
 }
 
 /**
  * Runs each cycle, updating the lcd based on the current State
 */
-void display() {
+void displayByState() {
   switch(state) {
     case DISPLAY_TIME:
       displayTime();
@@ -57,35 +63,15 @@ void display() {
  * Displays the current date and time on the LCD
 */
 void displayTime() {
-  lcd.home();
-  printDateToLcd();
-  lcd.setCursor(0, 1);
-  printTimeToLcd();
-}
-
-void printDateToLcd() {
-  lcd.print("Tue, 09-22-26");
-}
-
-void printTimeToLcd() {
-  int timeAlive = millis() / 1000;
-  char timeBuffer[9]; // Enough space for "HH:MM:SS/0"
-  int hours = timeAlive / (60 * 60);
-  int minutes = (timeAlive / 60) % 60;
-  int seconds = timeAlive % 60;
-  // Format the string safely into the buffer
-  snprintf(timeBuffer, sizeof(timeBuffer), "%02d:%02d:%02d", hours, minutes, seconds);
-  lcd.print(timeBuffer);
+  std::time_t currentTime = std::time(nullptr);
+  display->displayDateTime(currentTime);
 }
 
 /**
  * Displays the main menu on the LCD
 */
 void displayMenu() {
-  lcd.home();
-  lcd.print(mainMenu.option1Text().data());
-  lcd.setCursor(0, 1);
-  lcd.print(mainMenu.option2Text().data());
+  display->displayMenu(mainMenu);
 }
 
 
@@ -96,41 +82,41 @@ void displayMenu() {
 */
 void changeToState(State newState) {
   resetButtonCallbacks();
-  lcd.clear();
+  display->clear();
   state = newState;
   switch (newState) {
     case DISPLAY_TIME:
-      setCallback(bI->bl(), PRESSED, []() {
+      setCallback(b->bl(), PRESSED, []() {
         Serial.println("In display time, BL was pressed. Going to main menu.");
         changeToState(MAIN_MENU);
       });
-      setCallback(bI->br(), PRESSED, []() {
+      setCallback(b->br(), PRESSED, []() {
         Serial.println("In display time, BR was pressed");
       });
-      setCallback(bI->st(), PRESSED, []() {
+      setCallback(b->st(), PRESSED, []() {
         Serial.println("In display time, ST was pressed");
       });
-      setCallback(bI->sb(), PRESSED, []() {
+      setCallback(b->sb(), PRESSED, []() {
         Serial.println("In display time, SB was pressed");
       });
       break;
     case MAIN_MENU:
       mainMenu.clear();
-      setCallback(bI->bl(), PRESSED, []() {
+      setCallback(b->bl(), PRESSED, []() {
         Serial.println("In menu, BL was pressed. Returning to time display");
         changeToState(DISPLAY_TIME);
       });
-      setCallback(bI->br(), PRESSED, []() {
+      setCallback(b->br(), PRESSED, []() {
         Serial.println("In menu, BR was pressed. Scrolling down");
-        lcd.clear();
+        display->clear();
         mainMenu.scrollForward();
       });
-      setCallback(bI->st(), PRESSED, []() {
+      setCallback(b->st(), PRESSED, []() {
         Serial.print("In menu, ST was pressed. Option 1 Selected: ");
         Serial.println(mainMenu.option1Text().data());
         mainMenu.option1Press();
       });
-      setCallback(bI->sb(), PRESSED, []() {
+      setCallback(b->sb(), PRESSED, []() {
         Serial.print("In menu, SB was pressed. Option 2 Selected: ");
         Serial.println(mainMenu.option2Text().data());
         mainMenu.option2Press();
