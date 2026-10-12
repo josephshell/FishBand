@@ -7,16 +7,16 @@
 class Esp32C3ButtonImpl : public ButtonInterface {
 public:
   uint8_t bl() const override {
-    return D3;
+    return D8;
   }
   uint8_t br() const override {
-    return D2;
+    return D9;
   }
   uint8_t st() const override {
-    return D1;
+    return D6;
   }
   uint8_t sb() const override {
-    return D0;
+    return D7;
   }
 };
 

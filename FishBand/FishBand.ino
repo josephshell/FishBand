@@ -1,10 +1,11 @@
 // include the library code:
-#include <LiquidCrystal.h>
+// #include <LiquidCrystal.h>
 #include <State.h>
 #include <ButtonManagement.h>
 #include <Esp32C3ButtonImpl.h>
 #include <Menu.h>
 #include <Display.h>
+#include <OledDisplay.h>
 
 ButtonInterface* b;
 
@@ -28,7 +29,7 @@ void setup() {
 
   // region: Configuration
   b = new Esp32C3ButtonImpl();
-  display = new LcdDisplay();
+  display = new OledDisplay();
   // endregion
 
   configureButtons(*b);
