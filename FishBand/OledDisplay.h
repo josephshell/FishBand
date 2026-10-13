@@ -10,6 +10,7 @@
 class OledDisplay : public Display {
 private:
   U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2;
+  time_t lastTimeDisplayed;
 public:
   OledDisplay() : u8g2(U8G2_R0, U8X8_PIN_NONE) {}
 
@@ -18,6 +19,9 @@ public:
   }
 
   void displayDateTime(std::time_t& time) override {
+    if (time == lastTimeDisplayed) {
+      return;
+    }
     std::tm* localTime = std::localtime(&time);
     char dateBuffer[17];
     char timeBuffer[17];

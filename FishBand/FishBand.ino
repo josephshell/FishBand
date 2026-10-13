@@ -1,6 +1,7 @@
 // include the library code:
 // #include <LiquidCrystal.h>
 #include <State.h>
+#include <TimeProvider.h>
 #include <ButtonManagement.h>
 #include <Esp32C3ButtonImpl.h>
 #include <Menu.h>
@@ -8,6 +9,7 @@
 #include <OledDisplay.h>
 
 ButtonInterface* b;
+TimeProvider* tp;
 
 //TODO: Move state management into a new header
 void changeToState(State newState);
@@ -29,11 +31,13 @@ void setup() {
 
   // region: Configuration
   b = new Esp32C3ButtonImpl();
+  tp = new DS1307TimeProvider();
   display = new OledDisplay();
   // endregion
 
   configureButtons(*b);
   display->initialize();
+  tp->initialize();
 
   // Set initial state to time display
   changeToState(DISPLAY_TIME);
@@ -64,7 +68,7 @@ void displayByState() {
  * Displays the current date and time on the LCD
 */
 void displayTime() {
-  std::time_t currentTime = std::time(nullptr);
+  std::time_t currentTime = tp->getCurrentTime();
   display->displayDateTime(currentTime);
 }
 
