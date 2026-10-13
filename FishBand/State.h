@@ -11,7 +11,8 @@
 enum State {
   DISPLAY_TIME,
   MAIN_MENU,
-  ALARMS
+  ALARMS,
+  SHOW_IMAGE
 };
 
 #endif

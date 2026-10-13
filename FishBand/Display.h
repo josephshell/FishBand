@@ -14,6 +14,8 @@ public:
 
   virtual void displayMenu(Menu& menu) = 0;
 
+  virtual void displayImage(uint8_t x, uint8_t y, uint8_t w, uint8_t h, const uint8_t *bitmap) = 0;
+
   virtual void clear() = 0;
 
   virtual ~Display() = default;
@@ -68,6 +70,13 @@ public:
     lcd.setCursor(0, 1);
     lcd.print(menu.option2Text().data());
   }
+
+  void displayImage(uint8_t x, uint8_t y, uint8_t w, uint8_t h, const uint8_t *bitmap) override {
+    if (Serial) {
+      Serial.println("LCD does not support images");
+    }
+  }
+
 
   void clear() override {
     lcd.clear();

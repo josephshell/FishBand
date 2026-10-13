@@ -44,6 +44,13 @@ public:
     } while (u8g2.nextPage());
   }
 
+  void displayImage(uint8_t x, uint8_t y, uint8_t w, uint8_t h, const uint8_t *bitmap) override {
+    u8g2.firstPage();
+    do {
+      u8g2.drawXBMP(x, y, w, h, bitmap);
+    } while (u8g2.nextPage());
+  }
+
   void clear() override {
     u8g2.clear();
   }
