@@ -6,11 +6,11 @@
 #include <Menu.h>
 #include <U8g2lib.h>
 #include <Wire.h>
+#include <WatchFaces.h>
 
 class OledDisplay : public Display {
 private:
   U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2;
-  time_t lastTimeDisplayed;
 public:
   OledDisplay() : u8g2(U8G2_R0, U8X8_PIN_NONE) {}
 
@@ -19,19 +19,23 @@ public:
   }
 
   void displayDateTime(std::time_t& time) override {
-    if (time == lastTimeDisplayed) {
-      return;
-    }
     std::tm* localTime = std::localtime(&time);
+    char dayBuffer[4];
     char dateBuffer[17];
     char timeBuffer[17];
-    std::strftime(dateBuffer, sizeof(dateBuffer), "%a, %m/%d/%y", localTime);
-    std::strftime(timeBuffer, sizeof(timeBuffer), "%I:%M:%S %p", localTime);
+    std::strftime(dayBuffer, sizeof(dayBuffer), "%a", localTime);
+    std::strftime(dateBuffer, sizeof(dateBuffer), "%m/%d", localTime);
+    std::strftime(timeBuffer, sizeof(timeBuffer), "%I:%M %p", localTime);
     u8g2.firstPage();
     do {
-      u8g2.setFont(u8g2_font_ncenR14_tr);
-      u8g2.drawStr(0, 15, timeBuffer);
-      u8g2.drawStr(0, 35, dateBuffer);
+      u8g2.setBitmapMode(1);
+      u8g2.setFont(u8g2_font_spleen8x16_mf);
+      u8g2.drawStr(0, 15, dayBuffer);
+      u8g2.setFont(u8g2_font_6x10_mn);
+      u8g2.drawStr(0, 25, dateBuffer);
+      u8g2.setFont(u8g2_font_inr16_mn);
+      u8g2.drawStr(32, 42, timeBuffer);
+      u8g2.drawXBMP(0, 0, 128, 64, epd_bitmap_WatchFace_cornergecko);
     } while (u8g2.nextPage());
   }
 

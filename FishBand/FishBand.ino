@@ -62,7 +62,7 @@ void displayByState() {
       displayMenu();
       break;
     case SHOW_IMAGE:
-      display->displayImage(0, 0, 128, 64, epd_bitmap_WatchFace_gecko);
+      display->displayImage(0, 0, 128, 64, epd_bitmap_WatchFace_cornergecko);
     default:
       break;
   }
