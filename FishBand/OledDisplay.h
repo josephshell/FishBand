@@ -8,6 +8,10 @@
 #include <Wire.h>
 #include <WatchFaces.h>
 
+const uint8_t *font_16_px = u8g2_font_inr16_mn;
+const uint8_t *font_10_px = u8g2_font_spleen8x16_mf;
+const uint8_t *font_8_px = u8g2_font_6x10_mn;
+
 class OledDisplay : public Display {
 private:
   U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2;
@@ -29,11 +33,11 @@ public:
     u8g2.firstPage();
     do {
       u8g2.setBitmapMode(1);
-      u8g2.setFont(u8g2_font_spleen8x16_mf);
+      u8g2.setFont(font_10_px);
       u8g2.drawStr(0, 15, dayBuffer);
-      u8g2.setFont(u8g2_font_6x10_mn);
+      u8g2.setFont(font_8_px);
       u8g2.drawStr(0, 25, dateBuffer);
-      u8g2.setFont(u8g2_font_inr16_mn);
+      u8g2.setFont(font_16_px);
       u8g2.drawStr(32, 42, timeBuffer);
       u8g2.drawXBMP(0, 0, 128, 64, epd_bitmap_WatchFace_cornergecko);
     } while (u8g2.nextPage());
@@ -42,7 +46,7 @@ public:
   void displayMenu(Menu& menu) override {
     u8g2.firstPage();
     do {
-      u8g2.setFont(u8g2_font_ncenR14_tr);
+      u8g2.setFont(font_10_px);
       u8g2.drawStr(0, 15, menu.option1Text().data());
       u8g2.drawStr(0, 35, menu.option2Text().data());
     } while (u8g2.nextPage());
