@@ -17,6 +17,13 @@ void changeToState(State newState);
 
 Display* display;
 
+MenuOption options[4] = {
+  MenuOption({ "SHOW TIME" }, []() { changeToState(DISPLAY_TIME); }),
+  MenuOption({ "ALARM | TIMER" }, []() { changeToState(DISPLAY_TIME); }),
+  MenuOption({ "SHOW IMAGE" }, []() { changeToState(SHOW_IMAGE); }),
+  MenuOption({ "GO BACK" }, []() { changeToState(DISPLAY_TIME); })
+};
+uint8_t optionCount = 4;
 Menu mainMenu({
   MenuOption({ "SHOW TIME" }, []() { changeToState(DISPLAY_TIME); }),
   MenuOption({ "ALARM | TIMER" }, []() { changeToState(DISPLAY_TIME); }),
@@ -38,7 +45,7 @@ void setup() {
   // endregion
 
   configureButtons(*b);
-  display->initialize();
+  display->initialize(b);
   tp->initialize();
 
   // Set initial state to time display
@@ -80,7 +87,14 @@ void displayTime() {
  * Displays the main menu on the LCD
 */
 void displayMenu() {
-  display->displayMenu(mainMenu);
+  // display->displayMenu(mainMenu);
+  MenuOption* choice = display->openMenu(options, optionCount);
+  if (choice) {
+    Serial.print("Chosen option: ");
+    Serial.println(choice->text.data());
+  } else {
+    Serial.println("User pressed home");
+  }
 }
 
 
