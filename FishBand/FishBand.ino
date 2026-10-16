@@ -19,7 +19,7 @@ Display* display;
 
 Menu mainMenu({
   MenuOption({ "Alarm or Timer" }, []() { changeToState(DISPLAY_TIME); }),
-  MenuOption({ "Show Image" }, []() { changeToState(SHOW_IMAGE); }),
+  MenuOption({ "Test Page" }, []() { changeToState(TEST_PAGE); }),
   MenuOption({ "Return" }, []() { changeToState(DISPLAY_TIME); })
 });
 
@@ -60,8 +60,8 @@ void displayByState() {
     case MAIN_MENU:
       displayMenu();
       break;
-    case SHOW_IMAGE:
-      display->displayImage(0, 0, 128, 64, epd_bitmap_WatchFace_cornergecko);
+    case TEST_PAGE:
+      display->runTest();
     default:
       break;
   }
@@ -132,6 +132,9 @@ void changeToState(State newState) {
       break;
     case ALARMS:
 
+      break;
+    case TEST_PAGE:
+      
       break;
     default:
       Serial.print("Unsupported state? ");

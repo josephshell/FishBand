@@ -14,12 +14,20 @@ const uint8_t *font_time = u8g2_font_inr16_mn;
 const uint8_t *font_day_of_the_week = u8g2_font_spleen8x16_mf;
 // 8 px monospaced font
 const uint8_t *font_date = u8g2_font_6x10_mn;
-
-const uint8_t *font_menu = u8g2_font_spleen8x16_mf;
+// 14 px monospaced font
+const uint8_t *font_menu = u8g2_font_chargen_92_mf;
 
 class OledDisplay : public Display {
 private:
   U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2;
+  const uint8_t width = 128;
+  const uint8_t height = 64;
+
+  void drawStrCentered(uint8_t y, char *str) {
+    uint8_t strWidth = u8g2.getStrWidth(str);
+    uint8_t x = (width - strWidth) / 2;
+    u8g2.drawStr(x, y, str);
+  }
 public:
   OledDisplay() : u8g2(U8G2_R0, U8X8_PIN_NONE) {}
 
@@ -61,6 +69,31 @@ public:
     u8g2.firstPage();
     do {
       u8g2.drawXBMP(x, y, w, h, bitmap);
+    } while (u8g2.nextPage());
+  }
+
+  void runTest() override {
+    char previous[] = "Return";
+    char current[] = "Alarms";
+    char next[] = "Show funny";
+    u8g2.firstPage();
+    do {
+      u8g2.setDrawColor(1);
+      u8g2.drawRBox(5, 22, 114, 20, 5);
+
+      u8g2.setFont(font_menu);
+
+      // Black for highlighted option
+      u8g2.setDrawColor(0);
+      // Center Option
+      drawStrCentered(40, current);
+      // Blue for non highlighted
+      u8g2.setDrawColor(1);
+      // Top Option
+      drawStrCentered(18, previous);
+      // Bottom Option
+      drawStrCentered(60, next);
+
     } while (u8g2.nextPage());
   }
 
