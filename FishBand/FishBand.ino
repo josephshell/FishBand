@@ -18,10 +18,9 @@ void changeToState(State newState);
 Display* display;
 
 Menu mainMenu({
-  MenuOption({ "SHOW TIME" }, []() { changeToState(DISPLAY_TIME); }),
-  MenuOption({ "ALARM | TIMER" }, []() { changeToState(DISPLAY_TIME); }),
-  MenuOption({ "SHOW IMAGE" }, []() { changeToState(SHOW_IMAGE); }),
-  MenuOption({ "GO BACK" }, []() { changeToState(DISPLAY_TIME); })
+  MenuOption({ "Alarm or Timer" }, []() { changeToState(DISPLAY_TIME); }),
+  MenuOption({ "Show Image" }, []() { changeToState(SHOW_IMAGE); }),
+  MenuOption({ "Return" }, []() { changeToState(DISPLAY_TIME); })
 });
 
 int lastMoveTime = 0;

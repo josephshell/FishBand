@@ -8,9 +8,14 @@
 #include <Wire.h>
 #include <WatchFaces.h>
 
-const uint8_t *font_16_px = u8g2_font_inr16_mn;
-const uint8_t *font_10_px = u8g2_font_spleen8x16_mf;
-const uint8_t *font_8_px = u8g2_font_6x10_mn;
+// 16 px monospaced font
+const uint8_t *font_time = u8g2_font_inr16_mn;
+// 10 px monospaced font
+const uint8_t *font_day_of_the_week = u8g2_font_spleen8x16_mf;
+// 8 px monospaced font
+const uint8_t *font_date = u8g2_font_6x10_mn;
+
+const uint8_t *font_menu = u8g2_font_spleen8x16_mf;
 
 class OledDisplay : public Display {
 private:
@@ -32,21 +37,21 @@ public:
     std::strftime(timeBuffer, sizeof(timeBuffer), "%I:%M %p", localTime);
     u8g2.firstPage();
     do {
-      u8g2.setBitmapMode(1);
-      u8g2.setFont(font_10_px);
-      u8g2.drawStr(0, 15, dayBuffer);
-      u8g2.setFont(font_8_px);
-      u8g2.drawStr(0, 25, dateBuffer);
-      u8g2.setFont(font_16_px);
-      u8g2.drawStr(32, 42, timeBuffer);
       u8g2.drawXBMP(0, 0, 128, 64, epd_bitmap_WatchFace_cornergecko);
+      u8g2.setFontMode(1);
+      u8g2.setFont(font_day_of_the_week);
+      u8g2.drawStr(0, 15, dayBuffer);
+      u8g2.setFont(font_date);
+      u8g2.drawStr(0, 25, dateBuffer);
+      u8g2.setFont(font_time);
+      u8g2.drawStr(32, 42, timeBuffer);
     } while (u8g2.nextPage());
   }
 
   void displayMenu(Menu& menu) override {
     u8g2.firstPage();
     do {
-      u8g2.setFont(font_10_px);
+      u8g2.setFont(font_menu);
       u8g2.drawStr(0, 15, menu.option1Text().data());
       u8g2.drawStr(0, 35, menu.option2Text().data());
     } while (u8g2.nextPage());
