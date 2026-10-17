@@ -2,8 +2,6 @@
 #define DISPLAY_H
 
 #include <Arduino.h>
-// TODO: REMOVE LCD CODE FROM INTERFACE FILE
-#include <LiquidCrystal.h>
 #include <ctime>
 #include <AlarmBuilder.h>
 

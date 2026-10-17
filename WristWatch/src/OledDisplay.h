@@ -27,7 +27,7 @@ private:
   const uint8_t width = 128;
   const uint8_t height = 64;
 
-  void drawStrCentered(uint8_t y, char *str) {
+  void drawStrCentered(uint8_t y, const char *str) {
     uint8_t strWidth = u8g2.getStrWidth(str);
     if (strWidth > width) {
       u8g2.drawStr(0, y, str);
@@ -106,19 +106,14 @@ public:
       snprintf(timeBuffer, bufferLen, "%.2d:%.2d", alarmBuilder->getHour(), alarmBuilder->getMinute());
       drawStrCentered(15, timeBuffer);
       
-      char* meridiem;
-      if (alarmBuilder->isAm()) {
-        meridiem = "AM";
-      } else {
-        meridiem = "PM";
-      }
+      const char* meridiem = alarmBuilder->isAm() ? "AM" : "PM";
       drawStrCentered(30, meridiem);
       drawStrCentered(45, getFrequencyStr(alarmBuilder->getFrequency()));
       drawStrCentered(60, "FINISHED");
     } while (u8g2.nextPage());
   }
 
-  char* getFrequencyStr(AlarmFrequency freq) {
+  const char* getFrequencyStr(AlarmFrequency freq) {
     switch (freq) {
       case EVDY:
         return "EVDY";

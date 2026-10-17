@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <array>
+#include <cstring>
 #include <initializer_list>
 
 const std::array<char, 17> blankLine = { "" };
@@ -16,11 +17,11 @@ public:
     text = blankLine;
   }
 
-  MenuOption(std::array<char,17> p_text, std::function<void()> p_callback) {
-    text = p_text;
+  MenuOption(const char *p_text, std::function<void()> p_callback) {
+	text.fill('\0');
+	strncpy(text.data(), p_text, 16);
     callback = p_callback;
   }
-
 };
 
 const uint8_t MAX_MENU_OPTION_COUNT = 8;
