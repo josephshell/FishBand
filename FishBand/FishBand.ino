@@ -8,6 +8,7 @@
 #include <Display.h>
 #include <OledDisplay.h>
 #include <WatchFaces.h>
+#include <AlarmBuilder.h>
 
 ButtonInterface* b;
 TimeProvider* tp;
@@ -16,9 +17,11 @@ TimeProvider* tp;
 void changeToState(State newState);
 
 Display* display;
+AlarmBuilder* alarmBuilder;
 
 Menu mainMenu({
   MenuOption({ "ls Alarms" }, []() { changeToState(SHOW_ALARMS); }),
+  MenuOption({ "Make Alarm" }, []() { changeToState(MAKE_ALARM); }),
   MenuOption({ "Test Page" }, []() { changeToState(TEST_PAGE); }),
   MenuOption({ "Return" }, []() { changeToState(DISPLAY_TIME); })
 });
@@ -66,8 +69,13 @@ void displayByState() {
       break;
     case TEST_PAGE:
       display->runTest();
+      break;
     case SHOW_ALARMS:
       display->displayMenu(alarmsMenu);
+      break;
+    case MAKE_ALARM:
+      display->displayAlarmBuilder(alarmBuilder);
+      break;
     default:
       break;
   }
@@ -117,6 +125,11 @@ void changeToState(State newState) {
       break;
     case TEST_PAGE:
       
+      break;
+    case MAKE_ALARM:
+      if (!alarmBuilder){
+        alarmBuilder = new AlarmBuilder();
+      }
       break;
     default:
       Serial.print("Unsupported state? ");

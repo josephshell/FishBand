@@ -7,6 +7,7 @@
 #include <U8g2lib.h>
 #include <Wire.h>
 #include <WatchFaces.h>
+#include <stdio.h> // For snprintf
 
 // 16 px monospaced font
 const uint8_t *font_time = u8g2_font_inr16_mn;
@@ -16,6 +17,9 @@ const uint8_t *font_day_of_the_week = u8g2_font_spleen8x16_mf;
 const uint8_t *font_date = u8g2_font_6x10_mn;
 // 14 px monospaced font
 const uint8_t *font_menu = u8g2_font_chargen_92_mf;
+// 10 px monospaced font
+const uint8_t *font_alarm_builder = u8g2_font_spleen8x16_mf;
+
 
 class OledDisplay : public Display {
 private:
@@ -89,6 +93,46 @@ public:
       }
     } while (u8g2.nextPage());
   }
+
+  void displayAlarmBuilder(AlarmBuilder* alarmBuilder) override {
+    u8g2.firstPage();
+    do {
+      u8g2.setFont(font_alarm_builder);
+      // Blue for non highlighted
+      u8g2.setDrawColor(1);
+      char timeBuffer[6];
+
+      uint8_t bufferLen = sizeof timeBuffer;
+      snprintf(timeBuffer, bufferLen, "%.2d:%.2d", alarmBuilder->getHour(), alarmBuilder->getMinute());
+      drawStrCentered(15, timeBuffer);
+      
+      char* meridiem;
+      if (alarmBuilder->isAm()) {
+        meridiem = "AM";
+      } else {
+        meridiem = "PM";
+      }
+      drawStrCentered(30, meridiem);
+      drawStrCentered(45, getFrequencyStr(alarmBuilder->getFrequency()));
+      drawStrCentered(60, "FINISHED");
+    } while (u8g2.nextPage());
+  }
+
+  char* getFrequencyStr(AlarmFrequency freq) {
+    switch (freq) {
+      case EVDY:
+        return "EVDY";
+      case WKDY:
+        return "WKDY";
+      case WKND:
+        return "WKND";
+      case ONCE:
+        return "ONCE";
+      default:
+        return "UH..";
+    }
+  }
+
 
   void displayImage(uint8_t x, uint8_t y, uint8_t w, uint8_t h, const uint8_t *bitmap) override {
     u8g2.firstPage();
