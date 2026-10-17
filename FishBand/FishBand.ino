@@ -115,19 +115,17 @@ void changeToState(State newState) {
         changeToState(DISPLAY_TIME);
       });
       setCallback(b->br(), PRESSED, []() {
-        Serial.println("In menu, BR was pressed. Scrolling down");
-        display->clear();
-        mainMenu.scrollForward();
+        Serial.print("In menu, BR was pressed. Selecting menu option: ");
+        Serial.println(mainMenu.textAtCursorOffset(0).data());
+        mainMenu.select();
       });
       setCallback(b->st(), PRESSED, []() {
-        Serial.print("In menu, ST was pressed. Option 1 Selected: ");
-        Serial.println(mainMenu.option1Text().data());
-        mainMenu.option1Press();
+        Serial.println("In menu, ST was pressed. Scrolling up");
+        mainMenu.scrollUp();
       });
       setCallback(b->sb(), PRESSED, []() {
-        Serial.print("In menu, SB was pressed. Option 2 Selected: ");
-        Serial.println(mainMenu.option2Text().data());
-        mainMenu.option2Press();
+        Serial.println("In menu, SB was pressed. Scrolling down");
+        mainMenu.scrollDown();
       });
       break;
     case ALARMS:

@@ -25,8 +25,12 @@ private:
 
   void drawStrCentered(uint8_t y, char *str) {
     uint8_t strWidth = u8g2.getStrWidth(str);
-    uint8_t x = (width - strWidth) / 2;
-    u8g2.drawStr(x, y, str);
+    if (strWidth > width) {
+      u8g2.drawStr(0, y, str);
+    } else {
+      uint8_t x = (width - strWidth) / 2;
+      u8g2.drawStr(x, y, str);
+    }
   }
 public:
   OledDisplay() : u8g2(U8G2_R0, U8X8_PIN_NONE) {}
@@ -57,11 +61,26 @@ public:
   }
 
   void displayMenu(Menu& menu) override {
+    std::array<char, 17> current = menu.textAtCursorOffset(0);
+    std::array<char, 17> previous = menu.textAtCursorOffset(-1);
+    std::array<char, 17> next = menu.textAtCursorOffset(1);
     u8g2.firstPage();
     do {
+      u8g2.setDrawColor(1);
+      u8g2.drawRBox(5, 22, 114, 20, 5);
+
       u8g2.setFont(font_menu);
-      u8g2.drawStr(0, 15, menu.option1Text().data());
-      u8g2.drawStr(0, 35, menu.option2Text().data());
+
+      // Black for highlighted option
+      u8g2.setDrawColor(0);
+      // Center Option
+      drawStrCentered(40, current.data());
+      // Blue for non highlighted
+      u8g2.setDrawColor(1);
+      // Top Option
+      drawStrCentered(18, previous.data());
+      // Bottom Option
+      drawStrCentered(60, next.data());
     } while (u8g2.nextPage());
   }
 
@@ -93,7 +112,6 @@ public:
       drawStrCentered(18, previous);
       // Bottom Option
       drawStrCentered(60, next);
-
     } while (u8g2.nextPage());
   }
 

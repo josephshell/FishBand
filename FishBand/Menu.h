@@ -28,33 +28,11 @@ const uint8_t MAX_MENU_OPTION_COUNT = 8;
 class Menu {
 private:
   // The index for the first option on the watch
-  uint8_t cursor = 0;
+  int8_t cursor = 0;
   // The number of options available
   uint8_t optionCount = 0;
   // The actual array of MenuOption objects
   std::array<MenuOption, MAX_MENU_OPTION_COUNT> options;
-
-  MenuOption option1() {
-    return options[cursor];
-  }
-
-  MenuOption option2() {
-    return options[cursor + 1];
-  }
-
-  /**
-  * Logs some data about the menu to the Serial port
-  */
-  void logDebug() {
-    Serial.print("Cursor at ");
-    Serial.println(cursor);
-    Serial.print("Option count is: ");
-    Serial.println(optionCount);
-    Serial.print("Has option1: ");
-    Serial.println(hasOption1());
-    Serial.print("Has option2: ");
-    Serial.println(hasOption2());
-  }
 
 public:
   /**
@@ -70,81 +48,44 @@ public:
     }
     optionCount = p_optionCount;
   }
-  /**
-    * Returns true if there is an option at cursor
-    */
-  bool hasOption1() {
-    return optionCount > 0 && cursor < optionCount;
-  }
 
-  /**
-    * Returns true if there is an option after the cursor
-    */
-  bool hasOption2() {
-    return optionCount > 1 && (cursor + 1) < optionCount;
-  }
-
-
-  /**
-    * Returns a char array of the text from option 1, or blank if there is no option at the cursor
-    */
-  std::array<char, 17> option1Text() {
-    if (hasOption1()) {
-      return option1().text;
-    } else {
-      Serial.println("Trying to access option1 text when no option 1 available.");
-      logDebug();
+  std::array<char, 17> textAtCursorOffset(int8_t offset) {
+    int8_t offsetCursor = cursor + offset;
+    if (offset < 0) {
+      offsetCursor = offset + cursor + optionCount;
+      if (offsetCursor < 0) {
+        Serial.println("Error calculating cursor offset, negative offset greater than option count.");
+        offsetCursor = -1;
+      }
+    }
+    if (offsetCursor == -1) {
       return blankLine;
     }
+    return options[offsetCursor % optionCount].text;
   }
 
-  /**
-    * Returns a char array of the text from option 2, or blank if there is nothing in option 2
-    */
-  std::array<char, 17> option2Text() {
-    if (hasOption2()) {
-      return option2().text;
-    } else {
-      return blankLine;
+  void select() {
+    if (cursor > optionCount) {
+      Serial.println("Error selecting option, cursor is greater than option count.");
+      Serial.println("Resetting cursor");
+      clear();
+      return;
     }
+    options[cursor].callback();
   }
-  
-  /**
-    * Calls the callback associated with the MenuOption at option 1 (cursor)
-    */
-  void option1Press() {
-    if (hasOption1()) {
-      MenuOption option = option1();
-      option.callback();
-    } else {
-      Serial.println("Error selecting option 1, option 1 not found.");
-      logDebug();
+
+  void scrollUp() {
+    cursor--;
+    if (cursor < 0) {
+      cursor = optionCount - 1;
     }
   }
 
-  /**
-    * Calls the callback associated with the MenuOption at option 2
-    */
-  void option2Press() {
-    if (hasOption2()) {
-      MenuOption option = option2();
-      option.callback();
-    } else {
-      Serial.print("Error selecting option 2, option 2 not found");
-      logDebug();
-    }
-  }
-
-  /**
-    * Moves the cursor down one page (2 options). Wraps cursor back around if it goes beyond the end of the options.
-    */
-  void scrollForward() {
-    cursor = cursor + 2;
+  void scrollDown() {
+    cursor++;
     if (cursor >= optionCount) { // if scrolling beyond bottom, make sure it restarts at 0 so as to not miss initial option
       cursor = 0;
     }
-    Serial.println("Post scroll debug");
-    logDebug();
   }
 
   /**
