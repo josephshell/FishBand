@@ -88,6 +88,10 @@ public:
     }
   }
 
+  uint8_t getOptionCount() {
+    return optionCount;
+  }
+
   /**
     * Resets the cursor back to start
     */

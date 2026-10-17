@@ -18,9 +18,13 @@ void changeToState(State newState);
 Display* display;
 
 Menu mainMenu({
-  MenuOption({ "Alarm or Timer" }, []() { changeToState(DISPLAY_TIME); }),
+  MenuOption({ "ls Alarms" }, []() { changeToState(SHOW_ALARMS); }),
   MenuOption({ "Test Page" }, []() { changeToState(TEST_PAGE); }),
   MenuOption({ "Return" }, []() { changeToState(DISPLAY_TIME); })
+});
+Menu alarmsMenu({
+  MenuOption({ "01:23 Once" }, []() { changeToState(DISPLAY_TIME); }),
+  MenuOption({ "17:55 WkDy" }, []() { changeToState(DISPLAY_TIME); })
 });
 
 int lastMoveTime = 0;
@@ -58,10 +62,12 @@ void displayByState() {
       displayTime();
       break;
     case MAIN_MENU:
-      displayMenu();
+      display->displayMenu(mainMenu);
       break;
     case TEST_PAGE:
       display->runTest();
+    case SHOW_ALARMS:
+      display->displayMenu(alarmsMenu);
     default:
       break;
   }
@@ -73,13 +79,6 @@ void displayByState() {
 void displayTime() {
   std::time_t currentTime = tp->getCurrentTime();
   display->displayDateTime(currentTime);
-}
-
-/**
- * Displays the main menu on the LCD
-*/
-void displayMenu() {
-  display->displayMenu(mainMenu);
 }
 
 
@@ -110,26 +109,11 @@ void changeToState(State newState) {
       break;
     case MAIN_MENU:
       mainMenu.clear();
-      setCallback(b->bl(), PRESSED, []() {
-        Serial.println("In menu, BL was pressed. Returning to time display");
-        changeToState(DISPLAY_TIME);
-      });
-      setCallback(b->br(), PRESSED, []() {
-        Serial.print("In menu, BR was pressed. Selecting menu option: ");
-        Serial.println(mainMenu.textAtCursorOffset(0).data());
-        mainMenu.select();
-      });
-      setCallback(b->st(), PRESSED, []() {
-        Serial.println("In menu, ST was pressed. Scrolling up");
-        mainMenu.scrollUp();
-      });
-      setCallback(b->sb(), PRESSED, []() {
-        Serial.println("In menu, SB was pressed. Scrolling down");
-        mainMenu.scrollDown();
-      });
+      configureMenuButtons(mainMenu);
       break;
-    case ALARMS:
-
+    case SHOW_ALARMS:
+      alarmsMenu.clear();
+      configureMenuButtons(alarmsMenu);
       break;
     case TEST_PAGE:
       
@@ -138,4 +122,24 @@ void changeToState(State newState) {
       Serial.print("Unsupported state? ");
       Serial.println(newState);
   }
+}
+
+void configureMenuButtons(Menu& menu) {
+  setCallback(b->bl(), PRESSED, []() {
+    Serial.println("In menu, BL was pressed. Returning to time display");
+    changeToState(DISPLAY_TIME);
+  });
+  setCallback(b->br(), PRESSED, [&menu]() {
+    Serial.print("In menu, BR was pressed. Selecting menu option: ");
+    Serial.println(menu.textAtCursorOffset(0).data());
+    menu.select();
+  });
+  setCallback(b->st(), PRESSED, [&menu]() {
+    Serial.println("In menu, ST was pressed. Scrolling up");
+    menu.scrollUp();
+  });
+  setCallback(b->sb(), PRESSED, [&menu]() {
+    Serial.println("In menu, SB was pressed. Scrolling down");
+    menu.scrollDown();
+  });
 }
