@@ -36,7 +36,7 @@ enum CursorLocation {
 
 class AlarmBuilder {
 private:
-  uint8_t hour;
+  uint8_t hour = 12;
   uint8_t minute;
   bool isMeridiemAm;
   AlarmFrequency freq;
@@ -70,33 +70,50 @@ public:
     } else {
 	  --cursor;
 	}
+	Serial.print("Cursor is: ");
+	Serial.println(cursor);
   }
 
   void cursorForward() {
     if (++cursor > FINISH) {
       cursor = HOUR;
-    }
+	}
+	Serial.print("Cursor is: ");
+	Serial.println(cursor);
   }
 
   /**
    * Modifies the element at the cursor by modification value. Returns 0 if alarm is finished, 1 if not finished
+   * 
+   * modification: positive or negative value to modify the element at the cursor.
+   * For MERIDIEM, any non-zero value will toggle it.
+   * For FREQUENCY, positive values will raise frequency one level, negative values reduce frequency one level.
+   * For FINISH, positive values will finish the alarm returning 0, negative values will do nothing.
    */
   int modifySelected(int8_t modification) {
     switch (cursor) {
 		case HOUR:
 			Serial.print("HOUR + ");
 			Serial.println(modification);
+			modifyHour(modification);
 			break;
 		case MINUTE:
 			Serial.print("MINUTE + ");
 			Serial.println(modification);
+			modifyMinute(modification);
 			break;
 		case MERIDIEM:
 			Serial.println("MERIDIEM TOGGLE");
+			isMeridiemAm = !isMeridiemAm;
 			break;
 		case FREQUENCY:
 			Serial.print("FREQ + ");
 			Serial.println(modification);
+			if (modification > 0) {
+				frequencyUp();
+			} else {
+				frequencyDown();
+			}
 			break;
 		case FINISH:
 			if (modification > 0) {
@@ -115,25 +132,34 @@ public:
   }
 
   void modifyHour(int8_t modification) {
-    if (modification >= 0) {
-      hour += modification;
-      if (hour > 12) {
-        hour -= 12;
-      }
-    } else {
-      // handle negative
-    }
+	if (modification >= 0) {
+		hour += modification;
+		while (hour > 12) {
+			hour -= 12;
+		}
+	}
+	else {
+		if (-modification >= hour) {
+			hour = 12 - (-modification - hour) % 12;
+		} else {
+			hour += modification;
+		}
+	}
   }
 
   void modifyMinute(int8_t modification) {
-    if (modification >= 0) {
-      minute += modification;
-      if (minute >= 60) {
-        minute -= 60;
-      }
-    } else {
-      // handle negative
-    }
+	if (modification >= 0) {
+		minute += modification;
+		while (minute >= 60) {
+			minute -= 60;
+		}
+	} else {
+		if (-modification >= minute) {
+			minute = 60 - (-modification - minute) % 60;
+		} else {
+			minute += modification;
+		}
+	}
   }
 
   void toggleAmPm() {

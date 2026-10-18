@@ -113,14 +113,14 @@ public:
 	{
 		u8g2.setDrawColor(1);
 		u8g2.setFont(font_time);
-		
+
 		u8g2.drawStr(leftMarginPx, timeTopOffset, timeBuffer);
 		uint8_t timeStrWidth = u8g2.getStrWidth(timeBuffer);
 
 		u8g2.setFont(font_alarm_builder);
 
 		u8g2.drawStr(leftMarginPx + timeStrWidth + meridiemExSpacing, timeTopOffset, meridiem);
-		u8g2.drawStr(leftMarginPx, buttonY, "ONCE");
+		u8g2.drawStr(leftMarginPx, buttonY, getFrequencyStr(alarmBuilder->getFrequency()));
 		u8g2.drawButtonUTF8(buttonX, buttonY, U8G2_BTN_HCENTER | U8G2_BTN_BW3, buttonWidth, 0, buttonHPadding, "DONE");
 	} while (u8g2.nextPage());
   }
