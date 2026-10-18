@@ -126,6 +126,11 @@ void changeToState(State newState)
 {
 	resetButtonCallbacks();
 	display->clear();
+	if (alarmBuilder)
+	{
+		delete alarmBuilder;
+		alarmBuilder = nullptr;
+	}
 	state = newState;
 	switch (newState)
 	{
@@ -157,6 +162,23 @@ void changeToState(State newState)
 		{
 			alarmBuilder = new AlarmBuilder();
 		}
+		setCallback(b->bl(), PRESSED, []()
+					{ Serial.println("In make alarms, BL was pressed"); alarmBuilder->cursorBackward(); });
+		setCallback(b->br(), PRESSED, []()
+					{ Serial.println("In make alarms, BR was pressed"); alarmBuilder->cursorForward(); });
+		setCallback(b->st(), PRESSED, []()
+					{
+						Serial.println("In make alarms, ST was pressed");
+						if (alarmBuilder->modifySelected(1) == 0) {
+							Serial.println("Finished building alarm!");
+							Serial.print("Your new alarm is: ");
+							Serial.println(alarmBuilder->debugString());
+							Serial.println("Returning to main menu");
+							changeToState(MAIN_MENU);
+						}
+					});
+		setCallback(b->sb(), PRESSED, []()
+					{ Serial.println("In make alarms, SB was pressed"); alarmBuilder->modifySelected(-1); });
 		break;
 	default:
 		Serial.print("Unsupported state? ");

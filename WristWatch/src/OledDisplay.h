@@ -95,22 +95,34 @@ public:
   }
 
   void displayAlarmBuilder(AlarmBuilder* alarmBuilder) override {
-    u8g2.firstPage();
-    do {
-      u8g2.setFont(font_alarm_builder);
-      // Blue for non highlighted
-      u8g2.setDrawColor(1);
-      char timeBuffer[6];
+	uint8_t leftMarginPx = 5;
+	uint8_t rightMarginPx = 5;
+	uint8_t timeTopOffset = 30;
+	uint8_t meridiemExSpacing = 2;
+	uint8_t buttonWidth = 45;
+	uint8_t buttonX = width - (buttonWidth / 2) - rightMarginPx;
+	uint8_t buttonY = 55;
+	uint8_t buttonHPadding = 3;
 
-      uint8_t bufferLen = sizeof timeBuffer;
-      snprintf(timeBuffer, bufferLen, "%.2d:%.2d", alarmBuilder->getHour(), alarmBuilder->getMinute());
-      drawStrCentered(15, timeBuffer);
-      
-      const char* meridiem = alarmBuilder->isAm() ? "AM" : "PM";
-      drawStrCentered(30, meridiem);
-      drawStrCentered(45, getFrequencyStr(alarmBuilder->getFrequency()));
-      drawStrCentered(60, "FINISHED");
-    } while (u8g2.nextPage());
+	char timeBuffer[6];
+	uint8_t bufferLen = sizeof timeBuffer;
+	snprintf(timeBuffer, bufferLen, "%.2d:%.2d", alarmBuilder->getHour(), alarmBuilder->getMinute());
+	const char *meridiem = alarmBuilder->isAm() ? "AM" : "PM";
+	u8g2.firstPage();
+	do
+	{
+		u8g2.setDrawColor(1);
+		u8g2.setFont(font_time);
+		
+		u8g2.drawStr(leftMarginPx, timeTopOffset, timeBuffer);
+		uint8_t timeStrWidth = u8g2.getStrWidth(timeBuffer);
+
+		u8g2.setFont(font_alarm_builder);
+
+		u8g2.drawStr(leftMarginPx + timeStrWidth + meridiemExSpacing, timeTopOffset, meridiem);
+		u8g2.drawStr(leftMarginPx, buttonY, "ONCE");
+		u8g2.drawButtonUTF8(buttonX, buttonY, U8G2_BTN_HCENTER | U8G2_BTN_BW3, buttonWidth, 0, buttonHPadding, "DONE");
+	} while (u8g2.nextPage());
   }
 
   const char* getFrequencyStr(AlarmFrequency freq) {
