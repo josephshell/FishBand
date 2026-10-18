@@ -16,7 +16,7 @@ uint8_t buttonCount = 4;
 uint8_t buttonPins[4] =     {};
 bool buttonPressed[4] =     {};
 bool buttonJustPressed[4] = {};
-uint8_t debounceMillis[4] = {};
+unsigned long debounceMillis[4] = {};
 
 bool buttonsConfigured = false;
 
