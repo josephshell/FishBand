@@ -2,6 +2,7 @@
 #define ALARM_BUILDER_H
 
 #include <Arduino.h>
+#include <stdio.h> // For snprintf
 
 enum AlarmFrequency {
   EVDY, // Every day
@@ -9,6 +10,21 @@ enum AlarmFrequency {
   WKND, // Every weekend day (Fr + Sa)
   ONCE  // One time
 };
+
+char *getFrequencyStr(AlarmFrequency freq) {
+  switch (freq) {
+	case EVDY:
+	  return "EVDY";
+	case WKDY:
+	  return "WKDY";
+	case WKND:
+	  return "WKND";
+	case ONCE:
+	  return "ONCE";
+	default:
+	  return "UH..";
+  }
+}
 
 enum CursorLocation {
   HOUR,
@@ -48,33 +64,54 @@ public:
     return minute;
   }
 
+  void cursorBackward() {
+    if (cursor == HOUR) {
+      cursor = FINISH;
+    } else {
+	  --cursor;
+	}
+  }
+
   void cursorForward() {
     if (++cursor > FINISH) {
       cursor = HOUR;
     }
   }
 
-  void modifySelected(int8_t modification) {
+  /**
+   * Modifies the element at the cursor by modification value. Returns 0 if alarm is finished, 1 if not finished
+   */
+  int modifySelected(int8_t modification) {
     switch (cursor) {
-      case HOUR:
-        // modify hour
-        break;
-      case MINUTE:
-        // modify minute
-        break;
-      case MERIDIEM:
-        // modify AM/PM
-        break;
-      case FREQUENCY:
-        // modify frequency
-        break;
-      default:
-        if (Serial) {
-          Serial.println("Modification failure, cursor at invalid location. Resetting cursor");
-          cursor = 0;
-        }
-        break;
+		case HOUR:
+			Serial.print("HOUR + ");
+			Serial.println(modification);
+			break;
+		case MINUTE:
+			Serial.print("MINUTE + ");
+			Serial.println(modification);
+			break;
+		case MERIDIEM:
+			Serial.println("MERIDIEM TOGGLE");
+			break;
+		case FREQUENCY:
+			Serial.print("FREQ + ");
+			Serial.println(modification);
+			break;
+		case FINISH:
+			if (modification > 0) {
+				Serial.println("FINISH");
+				return 0;
+			}
+			break;
+		default:
+			if (Serial) {
+				Serial.println("Modification failure, cursor at invalid location. Resetting cursor");
+				cursor = 0;
+			}
+			break;
     }
+	return 1;
   }
 
   void modifyHour(int8_t modification) {
@@ -117,6 +154,12 @@ public:
     } else {
       freq = static_cast<AlarmFrequency>(freq + 1);
     }
+  }
+
+  char* debugString() {
+	static char buffer[32];
+	snprintf(buffer, sizeof(buffer), "%02d:%02d %s %s", hour, minute, isMeridiemAm ? "AM" : "PM", getFrequencyStr(freq));
+	return buffer;
   }
 };
 #endif
