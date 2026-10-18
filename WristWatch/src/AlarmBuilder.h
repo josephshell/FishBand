@@ -34,17 +34,30 @@ enum CursorLocation {
   FINISH
 };
 
+struct Alarm {
+  uint8_t hour;
+  uint8_t minute;
+  bool isMeridiemAm;
+  AlarmFrequency freq;
+};
+
+char *alarmToString(Alarm alarm) {
+  static char buffer[32];
+  snprintf(buffer, sizeof(buffer), "%02d:%02d %s %s", alarm.hour, alarm.minute, alarm.isMeridiemAm ? "AM" : "PM", getFrequencyStr(alarm.freq));
+  return buffer;
+}
+
 class AlarmBuilder {
 private:
   uint8_t hour = 12;
   uint8_t minute;
   bool isMeridiemAm;
   AlarmFrequency freq;
-  uint8_t cursor;
+  CursorLocation cursor;
 public:
   AlarmBuilder() = default;
 
-  uint8_t getCursor() {
+  CursorLocation getCursorLocation() {
     return cursor;
   }
   
@@ -68,14 +81,15 @@ public:
     if (cursor == HOUR) {
       cursor = FINISH;
     } else {
-	  --cursor;
+	  cursor = static_cast<CursorLocation>(cursor - 1);
 	}
 	Serial.print("Cursor is: ");
 	Serial.println(cursor);
   }
 
   void cursorForward() {
-    if (++cursor > FINISH) {
+	cursor = static_cast<CursorLocation>(cursor + 1);
+    if (cursor > FINISH) {
       cursor = HOUR;
 	}
 	Serial.print("Cursor is: ");
@@ -124,7 +138,7 @@ public:
 		default:
 			if (Serial) {
 				Serial.println("Modification failure, cursor at invalid location. Resetting cursor");
-				cursor = 0;
+				cursor = HOUR;
 			}
 			break;
     }
@@ -156,6 +170,9 @@ public:
 	} else {
 		if (-modification >= minute) {
 			minute = 60 - (-modification - minute) % 60;
+			if (minute == 60) {
+				minute = 0;
+			}
 		} else {
 			minute += modification;
 		}
@@ -183,9 +200,16 @@ public:
   }
 
   char* debugString() {
-	static char buffer[32];
-	snprintf(buffer, sizeof(buffer), "%02d:%02d %s %s", hour, minute, isMeridiemAm ? "AM" : "PM", getFrequencyStr(freq));
-	return buffer;
+	return alarmToString(buildAlarm());
+  }
+
+  Alarm buildAlarm() {
+	Alarm alarm;
+	alarm.hour = hour;
+	alarm.minute = minute;
+	alarm.isMeridiemAm = isMeridiemAm;
+	alarm.freq = freq;
+	return alarm;
   }
 };
 #endif

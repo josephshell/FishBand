@@ -108,6 +108,7 @@ public:
 	uint8_t bufferLen = sizeof timeBuffer;
 	snprintf(timeBuffer, bufferLen, "%.2d:%.2d", alarmBuilder->getHour(), alarmBuilder->getMinute());
 	const char *meridiem = alarmBuilder->isAm() ? "AM" : "PM";
+	CursorLocation cursor = alarmBuilder->getCursorLocation();
 	u8g2.firstPage();
 	do
 	{
@@ -116,12 +117,30 @@ public:
 
 		u8g2.drawStr(leftMarginPx, timeTopOffset, timeBuffer);
 		uint8_t timeStrWidth = u8g2.getStrWidth(timeBuffer);
+		uint8_t hourWidth = u8g2.getStrWidth("00");
+		if (cursor == HOUR) {
+			u8g2.drawLine(leftMarginPx, timeTopOffset + 2, leftMarginPx + hourWidth, timeTopOffset + 2);
+		} else if (cursor == MINUTE) {
+			uint8_t minuteX1 = leftMarginPx + hourWidth + u8g2.getStrWidth(":");
+			uint8_t minuteWidth = u8g2.getStrWidth("00");
+			u8g2.drawLine(minuteX1, timeTopOffset + 2, leftMarginPx + timeStrWidth, timeTopOffset + 2);
+		}
 
 		u8g2.setFont(font_alarm_builder);
 
 		u8g2.drawStr(leftMarginPx + timeStrWidth + meridiemExSpacing, timeTopOffset, meridiem);
+		if (cursor == MERIDIEM) {
+			u8g2.drawLine(leftMarginPx + timeStrWidth + meridiemExSpacing, timeTopOffset + 2, leftMarginPx + timeStrWidth + meridiemExSpacing + u8g2.getStrWidth(meridiem), timeTopOffset + 2);
+		}
 		u8g2.drawStr(leftMarginPx, buttonY, getFrequencyStr(alarmBuilder->getFrequency()));
-		u8g2.drawButtonUTF8(buttonX, buttonY, U8G2_BTN_HCENTER | U8G2_BTN_BW3, buttonWidth, 0, buttonHPadding, "DONE");
+		if (cursor == FREQUENCY) {
+			u8g2.drawLine(leftMarginPx, buttonY + 2, leftMarginPx + u8g2.getStrWidth(getFrequencyStr(alarmBuilder->getFrequency())), buttonY + 2);
+		}
+		if (cursor == FINISH) {
+			u8g2.drawButtonUTF8(buttonX, buttonY, U8G2_BTN_HCENTER | U8G2_BTN_BW3 | U8G2_BTN_INV, buttonWidth, 0, buttonHPadding, "DONE");
+		} else {
+			u8g2.drawButtonUTF8(buttonX, buttonY, U8G2_BTN_HCENTER | U8G2_BTN_BW3, buttonWidth, 0, buttonHPadding, "DONE");
+		}
 	} while (u8g2.nextPage());
   }
 
