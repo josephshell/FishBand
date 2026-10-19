@@ -19,18 +19,14 @@ void displayByState();
 Display *display;
 AlarmBuilder *alarmBuilder;
 
-Menu mainMenu({MenuOption("ls Alarms", []()
-						  { changeToState(SHOW_ALARMS); }),
-			   MenuOption("Make Alarm", []()
-						  { changeToState(MAKE_ALARM); }),
-			   MenuOption("Test Page", []()
-						  { changeToState(TEST_PAGE); }),
-			   MenuOption("Return", []()
-						  { changeToState(DISPLAY_TIME); })});
-Menu alarmsMenu({MenuOption("01:23 Once", []()
-							{ changeToState(DISPLAY_TIME); }),
-				 MenuOption("17:55 WkDy", []()
-							{ changeToState(DISPLAY_TIME); })});
+Menu mainMenu(
+	{
+		MenuOption("ls Alarms", []() { changeToState(SHOW_ALARMS); }),
+		MenuOption("Make Alarm", []() { changeToState(MAKE_ALARM); }),
+		MenuOption("Test Page", []() { changeToState(TEST_PAGE); }),
+		MenuOption("Return", []() { changeToState(DISPLAY_TIME); })
+	});
+Menu alarmsMenu({ MenuOption("Return", []() { changeToState(MAIN_MENU); }) });
 
 int lastMoveTime = 0;
 State state = DISPLAY_TIME;
@@ -105,7 +101,7 @@ void configureMenuButtons(Menu &menu)
 	setCallback(b->br(), PRESSED, [&menu]()
 				{
     Serial.print("In menu, BR was pressed. Selecting menu option: ");
-    Serial.println(menu.textAtCursorOffset(0).data());
+    Serial.println(menu.textAtCursorOffset(0));
     menu.select(); });
 	setCallback(b->st(), PRESSED, [&menu]()
 				{
@@ -170,9 +166,17 @@ void changeToState(State newState)
 					{
 						Serial.println("In make alarms, ST was pressed");
 						if (alarmBuilder->modifySelected(1) == 0) {
+
 							Serial.println("Finished building alarm!");
 							Serial.print("Your new alarm is: ");
-							Serial.println(alarmBuilder->debugString());
+							char buffer[32];
+							Serial.println(alarmBuilder->alarmToString(buffer, sizeof(buffer)));
+							alarmsMenu.addOption(buffer, []()
+							{
+								// TODO: Make the function have access to the menu option name
+								Serial.print("In alarms menu, selected alarm");
+								changeToState(DISPLAY_TIME);
+							});
 							Serial.println("Returning to main menu");
 							changeToState(MAIN_MENU);
 						}

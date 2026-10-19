@@ -66,9 +66,9 @@ public:
 
   void displayMenu(Menu& menu) override {
     // if option count < 3, don't display 
-    std::array<char, 17> current = menu.textAtCursorOffset(0);
-    std::array<char, 17> previous = menu.textAtCursorOffset(-1);
-    std::array<char, 17> next = menu.textAtCursorOffset(1);
+    const char* current = menu.textAtCursorOffset(0);
+    const char* previous = menu.textAtCursorOffset(-1);
+    const char* next = menu.textAtCursorOffset(1);
     uint8_t optionCount = menu.getOptionCount();
     u8g2.firstPage();
     do {
@@ -80,16 +80,16 @@ public:
       // Black for highlighted option
       u8g2.setDrawColor(0);
       // Center Option
-      drawStrCentered(40, current.data());
+      drawStrCentered(40, current);
       // Blue for non highlighted
       u8g2.setDrawColor(1);
       if (optionCount > 1) {
         // Bottom Option
-        drawStrCentered(60, next.data());
+        drawStrCentered(60, next);
       }
       if (optionCount > 2) {
         // Top Option
-        drawStrCentered(18, previous.data());
+        drawStrCentered(18, previous);
       }
     } while (u8g2.nextPage());
   }

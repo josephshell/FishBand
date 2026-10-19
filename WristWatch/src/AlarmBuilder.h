@@ -41,12 +41,6 @@ struct Alarm {
   AlarmFrequency freq;
 };
 
-char *alarmToString(Alarm alarm) {
-  static char buffer[32];
-  snprintf(buffer, sizeof(buffer), "%02d:%02d %s %s", alarm.hour, alarm.minute, alarm.isMeridiemAm ? "AM" : "PM", getFrequencyStr(alarm.freq));
-  return buffer;
-}
-
 class AlarmBuilder {
 private:
   uint8_t hour = 12;
@@ -199,9 +193,10 @@ public:
     }
   }
 
-  char* debugString() {
-	return alarmToString(buildAlarm());
-  }
+	char* alarmToString(char* outputBuffer, size_t bufferSize) {
+		snprintf(outputBuffer, bufferSize, "%02d:%02d %s %s", hour, minute, isMeridiemAm ? "AM" : "PM", getFrequencyStr(freq));
+		return outputBuffer;
+	}
 
   Alarm buildAlarm() {
 	Alarm alarm;
