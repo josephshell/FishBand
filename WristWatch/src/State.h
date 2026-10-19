@@ -7,13 +7,14 @@
  * The general state of the watch. Represents a major shift in
  * functionality. Examples of well-defined states: Displaying
  * the time, creating a timer, viewing a timer, etc.
-*/
-enum State {
-  DISPLAY_TIME,
-  MAIN_MENU,
-  SHOW_ALARMS,
-  MAKE_ALARM,
-  TEST_PAGE
+ */
+enum State
+{
+	DISPLAY_TIME,
+	MAIN_MENU,
+	SHOW_ALARMS,
+	MAKE_ALARM,
+	TEST_PAGE
 };
 
 #endif

@@ -20,13 +20,16 @@ Display *display;
 AlarmBuilder *alarmBuilder;
 
 Menu mainMenu(
-	{
-		MenuOption("ls Alarms", []() { changeToState(SHOW_ALARMS); }),
-		MenuOption("Make Alarm", []() { changeToState(MAKE_ALARM); }),
-		MenuOption("Test Page", []() { changeToState(TEST_PAGE); }),
-		MenuOption("Return", []() { changeToState(DISPLAY_TIME); })
-	});
-Menu alarmsMenu({ MenuOption("Return", []() { changeToState(MAIN_MENU); }) });
+	{MenuOption("ls Alarms", []()
+				{ changeToState(SHOW_ALARMS); }),
+	 MenuOption("Make Alarm", []()
+				{ changeToState(MAKE_ALARM); }),
+	 MenuOption("Test Page", []()
+				{ changeToState(TEST_PAGE); }),
+	 MenuOption("Return", []()
+				{ changeToState(DISPLAY_TIME); })});
+Menu alarmsMenu({MenuOption("Return", []()
+							{ changeToState(MAIN_MENU); })});
 
 int lastMoveTime = 0;
 State state = DISPLAY_TIME;
@@ -179,8 +182,7 @@ void changeToState(State newState)
 							});
 							Serial.println("Returning to main menu");
 							changeToState(MAIN_MENU);
-						}
-					});
+						} });
 		setCallback(b->sb(), PRESSED, []()
 					{ Serial.println("In make alarms, SB was pressed"); alarmBuilder->modifySelected(-1); });
 		break;
