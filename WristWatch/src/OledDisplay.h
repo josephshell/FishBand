@@ -106,7 +106,7 @@ public:
 		} while (u8g2.nextPage());
 	}
 
-	void displayAlarmBuilder(AlarmBuilder *alarmBuilder) override
+	void displayAlarm(Alarm &alarm, AlarmCursorLocation cursor) override
 	{
 		uint8_t leftMarginPx = 5;
 		uint8_t rightMarginPx = 5;
@@ -119,9 +119,8 @@ public:
 
 		char timeBuffer[6];
 		uint8_t bufferLen = sizeof timeBuffer;
-		snprintf(timeBuffer, bufferLen, "%.2d:%.2d", alarmBuilder->getHour(), alarmBuilder->getMinute());
-		const char *meridiem = alarmBuilder->isAm() ? "AM" : "PM";
-		CursorLocation cursor = alarmBuilder->getCursorLocation();
+		snprintf(timeBuffer, bufferLen, "%.2d:%.2d", alarm.hour, alarm.minute);
+		const char *meridiem = alarm.isMeridiemAm ? "AM" : "PM";
 		u8g2.firstPage();
 		do
 		{
@@ -149,10 +148,10 @@ public:
 			{
 				u8g2.drawLine(leftMarginPx + timeStrWidth + meridiemExSpacing, timeTopOffset + 2, leftMarginPx + timeStrWidth + meridiemExSpacing + u8g2.getStrWidth(meridiem), timeTopOffset + 2);
 			}
-			u8g2.drawStr(leftMarginPx, buttonY, getFrequencyStr(alarmBuilder->getFrequency()));
+			u8g2.drawStr(leftMarginPx, buttonY, getFrequencyStr(alarm.freq));
 			if (cursor == FREQUENCY)
 			{
-				u8g2.drawLine(leftMarginPx, buttonY + 2, leftMarginPx + u8g2.getStrWidth(getFrequencyStr(alarmBuilder->getFrequency())), buttonY + 2);
+				u8g2.drawLine(leftMarginPx, buttonY + 2, leftMarginPx + u8g2.getStrWidth(getFrequencyStr(alarm.freq)), buttonY + 2);
 			}
 			if (cursor == FINISH)
 			{

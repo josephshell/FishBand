@@ -7,7 +7,7 @@
 #include <Display.h>
 #include <OledDisplay.h>
 #include <WatchFaces.h>
-#include <AlarmBuilder.h>
+#include <alarms/AlarmBuilder.h>
 
 ButtonInterface *b;
 TimeProvider *tp;
@@ -30,6 +30,8 @@ Menu mainMenu(
 				{ changeToState(DISPLAY_TIME); })});
 Menu alarmsMenu({MenuOption("Return", []()
 							{ changeToState(MAIN_MENU); })});
+
+Alarm alarmBuilderAlarm;
 
 int lastMoveTime = 0;
 State state = DISPLAY_TIME;
@@ -88,7 +90,8 @@ void displayByState()
 		display->displayMenu(alarmsMenu);
 		break;
 	case MAKE_ALARM:
-		display->displayAlarmBuilder(alarmBuilder);
+		alarmBuilder->buildAlarm(alarmBuilderAlarm);
+		display->displayAlarm(alarmBuilderAlarm, alarmBuilder->getCursorLocation());
 		break;
 	default:
 		break;
@@ -127,6 +130,7 @@ void changeToState(State newState)
 	display->clear();
 	if (alarmBuilder)
 	{
+		alarmBuilderAlarm.clear();
 		delete alarmBuilder;
 		alarmBuilder = nullptr;
 	}

@@ -2,85 +2,42 @@
 #define ALARM_BUILDER_H
 
 #include <Arduino.h>
+#include <alarms/Alarms.h>
 #include <stdio.h> // For snprintf
 
-enum AlarmFrequency
-{
-	EVDY, // Every day
-	WKDY, // Every weekday (Su-Th)
-	WKND, // Every weekend day (Fr + Sa)
-	ONCE  // One time
-};
-
-char *getFrequencyStr(AlarmFrequency freq)
-{
-	switch (freq)
-	{
-	case EVDY:
-		return "EVDY";
-	case WKDY:
-		return "WKDY";
-	case WKND:
-		return "WKND";
-	case ONCE:
-		return "ONCE";
-	default:
-		return "UH..";
-	}
-}
-
-enum CursorLocation
-{
-	HOUR,
-	MINUTE,
-	MERIDIEM,
-	FREQUENCY,
-	FINISH
-};
-
-struct Alarm
-{
-	uint8_t hour;
-	uint8_t minute;
-	bool isMeridiemAm;
-	AlarmFrequency freq;
-};
 
 class AlarmBuilder
 {
 private:
-	uint8_t hour = 12;
-	uint8_t minute;
-	bool isMeridiemAm;
-	AlarmFrequency freq;
-	CursorLocation cursor;
+	Alarm alarm;
+	AlarmCursorLocation cursor;
 
 public:
 	AlarmBuilder() = default;
 
-	CursorLocation getCursorLocation()
+	AlarmCursorLocation getCursorLocation()
 	{
 		return cursor;
 	}
 
 	uint8_t getHour()
 	{
-		return hour;
+		return alarm.hour;
 	}
 
 	AlarmFrequency getFrequency()
 	{
-		return freq;
+		return alarm.freq;
 	}
 
 	bool isAm()
 	{
-		return isMeridiemAm;
+		return alarm.isMeridiemAm;
 	}
 
 	uint8_t getMinute()
 	{
-		return minute;
+		return alarm.minute;
 	}
 
 	void cursorBackward()
@@ -91,7 +48,7 @@ public:
 		}
 		else
 		{
-			cursor = static_cast<CursorLocation>(cursor - 1);
+			cursor = static_cast<AlarmCursorLocation>(cursor - 1);
 		}
 		Serial.print("Cursor is: ");
 		Serial.println(cursor);
@@ -99,7 +56,7 @@ public:
 
 	void cursorForward()
 	{
-		cursor = static_cast<CursorLocation>(cursor + 1);
+		cursor = static_cast<AlarmCursorLocation>(cursor + 1);
 		if (cursor > FINISH)
 		{
 			cursor = HOUR;
@@ -132,7 +89,7 @@ public:
 			break;
 		case MERIDIEM:
 			Serial.println("MERIDIEM TOGGLE");
-			isMeridiemAm = !isMeridiemAm;
+			alarm.isMeridiemAm = !alarm.isMeridiemAm;
 			break;
 		case FREQUENCY:
 			Serial.print("FREQ + ");
@@ -166,6 +123,7 @@ public:
 
 	void modifyHour(int8_t modification)
 	{
+		uint8_t hour = alarm.hour;
 		if (modification >= 0)
 		{
 			hour += modification;
@@ -185,10 +143,12 @@ public:
 				hour += modification;
 			}
 		}
+		alarm.hour = hour;
 	}
 
 	void modifyMinute(int8_t modification)
 	{
+		uint8_t minute = alarm.minute;
 		if (modification >= 0)
 		{
 			minute += modification;
@@ -212,51 +172,51 @@ public:
 				minute += modification;
 			}
 		}
+		alarm.minute = minute;
 	}
 
 	void toggleAmPm()
 	{
-		isMeridiemAm = !isMeridiemAm;
+		alarm.isMeridiemAm = !alarm.isMeridiemAm;
 	}
 
 	void frequencyUp()
 	{
-		if (freq == EVDY)
+		if (alarm.freq == EVDY)
 		{ // if at highest freq, go to bottom
-			freq = ONCE;
+			alarm.freq = ONCE;
 		}
 		else
 		{
-			freq = static_cast<AlarmFrequency>(freq - 1);
+			alarm.freq = static_cast<AlarmFrequency>(alarm.freq - 1);
 		}
 	}
 
 	void frequencyDown()
 	{
-		if (freq == ONCE)
+		if (alarm.freq == ONCE)
 		{ // if at lowest freq, go to top
-			freq = EVDY;
+			alarm.freq = EVDY;
 		}
 		else
 		{
-			freq = static_cast<AlarmFrequency>(freq + 1);
+			alarm.freq = static_cast<AlarmFrequency>(alarm.freq + 1);
 		}
 	}
 
 	char *alarmToString(char *outputBuffer, size_t bufferSize)
 	{
-		snprintf(outputBuffer, bufferSize, "%02d:%02d %s %s", hour, minute, isMeridiemAm ? "AM" : "PM", getFrequencyStr(freq));
+		snprintf(outputBuffer, bufferSize, "%02d:%02d %s %s", alarm.hour, alarm.minute, alarm.isMeridiemAm ? "AM" : "PM", getFrequencyStr(alarm.freq));
 		return outputBuffer;
 	}
 
-	Alarm buildAlarm()
+	Alarm buildAlarm(Alarm& outputAlarm)
 	{
-		Alarm alarm;
-		alarm.hour = hour;
-		alarm.minute = minute;
-		alarm.isMeridiemAm = isMeridiemAm;
-		alarm.freq = freq;
-		return alarm;
+		outputAlarm.hour = alarm.hour;
+		outputAlarm.minute = alarm.minute;
+		outputAlarm.isMeridiemAm = alarm.isMeridiemAm;
+		outputAlarm.freq = alarm.freq;
+		return outputAlarm;
 	}
 };
 #endif
