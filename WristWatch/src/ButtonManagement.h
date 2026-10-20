@@ -151,17 +151,4 @@ void onReleased(uint8_t pin)
 	Serial.println(pin);
 }
 
-bool anyPressed(uint8_t pins[])
-{
-	int size = sizeof(pins) / sizeof(pins[0]);
-	for (int i = 0; i < size; i++)
-	{
-		if (digitalRead(pins[i]) == LOW)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 #endif

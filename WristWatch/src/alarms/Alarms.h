@@ -9,7 +9,7 @@ enum AlarmFrequency
 	ONCE  // One time
 };
 
-char *getFrequencyStr(AlarmFrequency freq)
+const char *getFrequencyStr(AlarmFrequency freq)
 {
 	switch (freq)
 	{
