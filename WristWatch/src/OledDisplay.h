@@ -72,13 +72,8 @@ public:
 		} while (u8g2.nextPage());
 	}
 
-	void displayMenu(Menu &menu) override
-	{
-		// if option count < 3, don't display
-		const char *current = menu.textAtCursorOffset(0);
-		const char *previous = menu.textAtCursorOffset(-1);
-		const char *next = menu.textAtCursorOffset(1);
-		uint8_t optionCount = menu.getOptionCount();
+	void displayMenu(const char* optionMiddle, const char* optionTop = nullptr, const char* optionBottom = nullptr) {
+
 		u8g2.firstPage();
 		do
 		{
@@ -87,23 +82,34 @@ public:
 
 			u8g2.setFont(font_menu);
 
-			// Black for highlighted option
-			u8g2.setDrawColor(0);
-			// Center Option
-			drawStrCentered(40, current);
+			if (optionMiddle) {
+				// Black for highlighted option
+				u8g2.setDrawColor(0);
+				drawStrCentered(40, optionMiddle);
+				u8g2.setDrawColor(1);
+			}
 			// Blue for non highlighted
 			u8g2.setDrawColor(1);
-			if (optionCount > 1)
+			if (optionBottom)
 			{
-				// Bottom Option
-				drawStrCentered(60, next);
+				drawStrCentered(60, optionBottom);
 			}
-			if (optionCount > 2)
+			if (optionTop)
 			{
-				// Top Option
-				drawStrCentered(18, previous);
+				drawStrCentered(18, optionTop);
 			}
 		} while (u8g2.nextPage());
+	}
+
+	void displayMenu(Menu &menu) override
+	{
+		uint8_t optionCount = menu.getOptionCount();
+		
+		const char *current = menu.textAtCursorOffset(0);
+		const char *next = optionCount > 1 ? menu.textAtCursorOffset(1) : nullptr;
+		const char *previous = optionCount > 2 ? menu.textAtCursorOffset(-1) : nullptr;
+
+		displayMenu(current, previous, next);
 	}
 
 	void displayAlarm(Alarm &alarm, AlarmCursorLocation cursor) override
