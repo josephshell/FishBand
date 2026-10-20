@@ -38,15 +38,15 @@ enum AlarmCursorLocation
 struct Alarm
 {
 	uint8_t hour = 12;
-	uint8_t minute;
-	bool isMeridiemAm;
+	uint8_t minute = 0;
+	bool isMeridiemAm = false;
 	AlarmFrequency freq = ONCE;
 
 	void clear()
 	{
 		hour = 12;
 		minute = 0;
-		isMeridiemAm = true;
+		isMeridiemAm = false;
 		freq = ONCE;
 	}
 };
