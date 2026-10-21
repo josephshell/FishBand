@@ -170,23 +170,6 @@ public:
 		} while (u8g2.nextPage());
 	}
 
-	const char *getFrequencyStr(AlarmFrequency freq)
-	{
-		switch (freq)
-		{
-		case EVDY:
-			return "EVDY";
-		case WKDY:
-			return "WKDY";
-		case WKND:
-			return "WKND";
-		case ONCE:
-			return "ONCE";
-		default:
-			return "UH..";
-		}
-	}
-
 	void displayImage(uint8_t x, uint8_t y, uint8_t w, uint8_t h, const uint8_t *bitmap) override
 	{
 		u8g2.firstPage();
