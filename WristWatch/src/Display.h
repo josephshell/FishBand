@@ -10,7 +10,7 @@ class Display
 public:
 	virtual void initialize() = 0;
 
-	virtual void displayDateTime(std::time_t &time) = 0;
+	virtual void mainDisplay(std::time_t &time, int8_t batteryLevel) = 0;
 
 	virtual void displayMenu(Menu &menu) = 0;
 

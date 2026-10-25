@@ -8,6 +8,7 @@
 #include <OledDisplay.h>
 #include <WatchFaces.h>
 #include <alarms/AlarmBuilder.h>
+#include <BatteryManagement.h>
 
 ButtonInterface *b;
 TimeProvider *tp;
@@ -27,19 +28,25 @@ Menu mainMenu(
 	 MenuOption("Test Page", []()
 				{ changeToState(TEST_PAGE); }),
 	 MenuOption("Return", []()
-				{ changeToState(DISPLAY_TIME); })});
+				{ changeToState(MAIN_DISPLAY); })});
 Menu alarmsMenu({MenuOption("Return", []()
 							{ changeToState(MAIN_MENU); })});
 
 Alarm alarmBuilderAlarm;
 
 int lastMoveTime = 0;
-State state = DISPLAY_TIME;
+State state = MAIN_DISPLAY;
+
+int8_t batteryLevel = 100;
+unsigned long lastBattCheck = 0;
+unsigned long batteryUpdateFrequency = 1000;
 
 void setup()
 {
 	// Configure Serial for logging
 	Serial.begin(9600);
+
+	BatteryManagement::initialize();
 
 	// region: Configuration
 	b = new Esp32C3ButtonImpl();
@@ -51,23 +58,31 @@ void setup()
 	display->initialize();
 	tp->initialize();
 
-	// Set initial state to time display
-	changeToState(DISPLAY_TIME);
+	// Set initial state
+	changeToState(MAIN_DISPLAY);
 }
 
 void loop()
 {
+	unsigned long currentMillis = millis();
 	pollButtons();
 	displayByState();
+	if (currentMillis - lastBattCheck >= batteryUpdateFrequency)
+	{
+		batteryLevel = BatteryManagement::getBatteryLevel();
+		lastBattCheck = currentMillis;
+		Serial.print("Battery level updated. New level: ");
+		Serial.println(batteryLevel);
+	}
 }
 
 /**
  * Displays the current date and time on the LCD
  */
-void displayTime()
+void showMainDisplay()
 {
 	std::time_t currentTime = tp->getCurrentTime();
-	display->displayDateTime(currentTime);
+	display->mainDisplay(currentTime, batteryLevel);
 }
 
 /**
@@ -77,8 +92,8 @@ void displayByState()
 {
 	switch (state)
 	{
-	case DISPLAY_TIME:
-		displayTime();
+	case MAIN_DISPLAY:
+		showMainDisplay();
 		break;
 	case MAIN_MENU:
 		display->displayMenu(mainMenu);
@@ -103,7 +118,7 @@ void configureMenuButtons(Menu &menu)
 	setCallback(b->bl(), PRESSED, []()
 				{
     Serial.println("In menu, BL was pressed. Returning to time display");
-    changeToState(DISPLAY_TIME); });
+    changeToState(MAIN_DISPLAY); });
 	setCallback(b->br(), PRESSED, [&menu]()
 				{
     Serial.print("In menu, BR was pressed. Selecting menu option: ");
@@ -137,17 +152,17 @@ void changeToState(State newState)
 	state = newState;
 	switch (newState)
 	{
-	case DISPLAY_TIME:
+	case MAIN_DISPLAY:
 		setCallback(b->bl(), PRESSED, []()
 					{
-        Serial.println("In display time, BL was pressed. Going to main menu.");
+        Serial.println("In main display, BL was pressed. Going to main menu.");
         changeToState(MAIN_MENU); });
 		setCallback(b->br(), PRESSED, []()
-					{ Serial.println("In display time, BR was pressed"); });
+					{ Serial.println("In main display, BR was pressed"); });
 		setCallback(b->st(), PRESSED, []()
-					{ Serial.println("In display time, ST was pressed"); });
+					{ Serial.println("In main display, ST was pressed"); });
 		setCallback(b->sb(), PRESSED, []()
-					{ Serial.println("In display time, SB was pressed"); });
+					{ Serial.println("In main display, SB was pressed"); });
 		break;
 	case MAIN_MENU:
 		mainMenu.clear();
@@ -182,7 +197,7 @@ void changeToState(State newState)
 							{
 								// TODO: Make the function have access to the menu option name
 								Serial.print("In alarms menu, selected alarm");
-								changeToState(DISPLAY_TIME);
+								changeToState(MAIN_DISPLAY);
 							});
 							Serial.println("Returning to main menu");
 							changeToState(MAIN_MENU);

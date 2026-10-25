@@ -15,6 +15,8 @@ const uint8_t *font_time = u8g2_font_inr16_mn;
 const uint8_t *font_day_of_the_week = u8g2_font_spleen8x16_mf;
 // 8 px monospaced font
 const uint8_t *font_date = u8g2_font_6x10_mn;
+// 8 px font with full character set
+const uint8_t *font_battery_level = u8g2_font_t0_11_tf;
 // 14 px monospaced font
 const uint8_t *font_menu = u8g2_font_chargen_92_mf;
 // 10 px monospaced font
@@ -49,15 +51,18 @@ public:
 		u8g2.begin();
 	}
 
-	void displayDateTime(std::time_t &time) override
+	void mainDisplay(std::time_t &time, int8_t batteryLevel) override
 	{
 		std::tm *localTime = std::localtime(&time);
 		char dayBuffer[4];
 		char dateBuffer[17];
 		char timeBuffer[17];
+		char batteryBuffer[10];
 		std::strftime(dayBuffer, sizeof(dayBuffer), "%a", localTime);
 		std::strftime(dateBuffer, sizeof(dateBuffer), "%m/%d", localTime);
 		std::strftime(timeBuffer, sizeof(timeBuffer), "%I:%M %p", localTime);
+		snprintf(batteryBuffer, sizeof batteryBuffer, "%d%%", batteryLevel);
+
 		u8g2.firstPage();
 		do
 		{
@@ -69,10 +74,13 @@ public:
 			u8g2.drawStr(0, 25, dateBuffer);
 			u8g2.setFont(font_time);
 			u8g2.drawStr(32, 42, timeBuffer);
+			u8g2.setFont(font_battery_level);
+			u8g2.drawStr(105, 64, batteryBuffer);
 		} while (u8g2.nextPage());
 	}
 
-	void displayMenu(const char* optionMiddle, const char* optionTop = nullptr, const char* optionBottom = nullptr) {
+	void displayMenu(const char *optionMiddle, const char *optionTop = nullptr, const char *optionBottom = nullptr)
+	{
 
 		u8g2.firstPage();
 		do
@@ -82,7 +90,8 @@ public:
 
 			u8g2.setFont(font_menu);
 
-			if (optionMiddle) {
+			if (optionMiddle)
+			{
 				// Black for highlighted option
 				u8g2.setDrawColor(0);
 				drawStrCentered(40, optionMiddle);
@@ -104,7 +113,7 @@ public:
 	void displayMenu(Menu &menu) override
 	{
 		uint8_t optionCount = menu.getOptionCount();
-		
+
 		const char *current = menu.textAtCursorOffset(0);
 		const char *next = optionCount > 1 ? menu.textAtCursorOffset(1) : nullptr;
 		const char *previous = optionCount > 2 ? menu.textAtCursorOffset(-1) : nullptr;
