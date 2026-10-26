@@ -11,15 +11,16 @@
 #include <BatteryManagement.h>
 #include <update_agents/UpdateAgents.h>
 
-ButtonInterface *b;
-TimeProvider *tp;
-
 // TODO: Move state management into a new header
 void changeToState(State newState);
 void displayByState();
 
+ButtonInterface *b;
+TimeProvider *tp;
 Display *display;
+
 AlarmBuilder *alarmBuilder;
+Alarm alarmBuilderAlarm;
 
 Menu mainMenu(
 	{MenuOption("ls Alarms", []()
@@ -33,14 +34,10 @@ Menu mainMenu(
 Menu alarmsMenu({MenuOption("Return", []()
 							{ changeToState(MAIN_MENU); })});
 
-Alarm alarmBuilderAlarm;
-
-int lastMoveTime = 0;
-State state = MAIN_DISPLAY;
-
 int8_t batteryLevel = 100;
-unsigned long lastBattCheck = 0;
-unsigned long batteryUpdateFrequency = 1000;
+unsigned long batteryUpdateDelay = 30000;
+
+State state = MAIN_DISPLAY;
 
 void setup()
 {
@@ -65,7 +62,7 @@ void setup()
 		{ pollButtons(); });
 	UpdateAgents::addAgent(
 		"BatteryAgent",
-		30000UL, []()
+		batteryUpdateDelay, []()
 		{
 			batteryLevel = BatteryManagement::getBatteryLevel();
 			Serial.print("Battery level updated. New level: ");
