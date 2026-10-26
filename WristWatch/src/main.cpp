@@ -9,6 +9,7 @@
 #include <WatchFaces.h>
 #include <alarms/AlarmBuilder.h>
 #include <BatteryManagement.h>
+#include <update_agents/UpdateAgents.h>
 
 ButtonInterface *b;
 TimeProvider *tp;
@@ -58,6 +59,18 @@ void setup()
 	display->initialize();
 	tp->initialize();
 
+	UpdateAgents::addAgent(
+		"ButtonAgent",
+		0UL, []()
+		{ pollButtons(); });
+	UpdateAgents::addAgent(
+		"BatteryAgent",
+		30000UL, []()
+		{
+			batteryLevel = BatteryManagement::getBatteryLevel();
+			Serial.print("Battery level updated. New level: ");
+			Serial.println(batteryLevel); });
+
 	// Set initial state
 	changeToState(MAIN_DISPLAY);
 }
@@ -65,15 +78,8 @@ void setup()
 void loop()
 {
 	unsigned long currentMillis = millis();
-	pollButtons();
 	displayByState();
-	if (currentMillis - lastBattCheck >= batteryUpdateFrequency)
-	{
-		batteryLevel = BatteryManagement::getBatteryLevel();
-		lastBattCheck = currentMillis;
-		Serial.print("Battery level updated. New level: ");
-		Serial.println(batteryLevel);
-	}
+	UpdateAgents::pollAgents(currentMillis);
 }
 
 /**
