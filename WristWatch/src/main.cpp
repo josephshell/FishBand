@@ -14,6 +14,7 @@
 // TODO: Move state management into a new header
 void changeToState(State newState);
 void displayByState();
+void actionsOnTheSecond();
 
 ButtonInterface *b;
 TimeProvider *tp;
@@ -21,6 +22,8 @@ Display *display;
 
 AlarmBuilder *alarmBuilder;
 Alarm alarmBuilderAlarm;
+
+time_t currentTime = 0;
 
 Menu mainMenu(
 	{MenuOption("ls Alarms", []()
@@ -56,17 +59,7 @@ void setup()
 	display->initialize();
 	tp->initialize();
 
-	UpdateAgents::addAgent(
-		"ButtonAgent",
-		0UL, []()
-		{ pollButtons(); });
-	UpdateAgents::addAgent(
-		"BatteryAgent",
-		batteryUpdateDelay, []()
-		{
-			batteryLevel = BatteryManagement::getBatteryLevel();
-			Serial.print("Battery level updated. New level: ");
-			Serial.println(batteryLevel); });
+	UpdateAgents::addAgent("Agent Seconds", 1000, actionsOnTheSecond);
 
 	// Set initial state
 	changeToState(MAIN_DISPLAY);
@@ -77,6 +70,18 @@ void loop()
 	unsigned long currentMillis = millis();
 	displayByState();
 	UpdateAgents::pollAgents(currentMillis);
+	pollButtons();
+}
+
+void actionsOnTheSecond()
+{
+	// Read time
+	currentTime = tp->getCurrentTime();
+
+	// Read battery level
+	batteryLevel = BatteryManagement::getBatteryLevel();
+
+	// Check alarms to see if they should be going off
 }
 
 /**
@@ -84,7 +89,6 @@ void loop()
  */
 void showMainDisplay()
 {
-	std::time_t currentTime = tp->getCurrentTime();
 	display->mainDisplay(currentTime, batteryLevel);
 }
 
