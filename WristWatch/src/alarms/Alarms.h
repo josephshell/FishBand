@@ -9,22 +9,7 @@ enum AlarmFrequency
 	ONCE  // One time
 };
 
-const char *getFrequencyStr(AlarmFrequency freq)
-{
-	switch (freq)
-	{
-	case EVDY:
-		return "EVDY";
-	case WKDY:
-		return "WKDY";
-	case WKND:
-		return "WKND";
-	case ONCE:
-		return "ONCE";
-	default:
-		return "UH..";
-	}
-}
+const char *getFrequencyStr(AlarmFrequency freq);
 
 enum AlarmCursorLocation
 {
@@ -37,8 +22,8 @@ enum AlarmCursorLocation
 
 struct Alarm
 {
-	uint8_t hour = 12;
-	uint8_t minute = 0;
+	int hour = 12;
+	int minute = 0;
 	bool isMeridiemAm = false;
 	AlarmFrequency freq = ONCE;
 

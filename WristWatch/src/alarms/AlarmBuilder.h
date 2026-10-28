@@ -20,7 +20,7 @@ public:
 		return cursor;
 	}
 
-	uint8_t getHour()
+	int getHour()
 	{
 		return alarm.hour;
 	}
@@ -123,7 +123,8 @@ public:
 
 	void modifyHour(int8_t modification)
 	{
-		uint8_t hour = alarm.hour;
+		//TODO: Simplify math now that hour and minute are signed
+		int hour = alarm.hour;
 		if (modification >= 0)
 		{
 			hour += modification;
@@ -148,7 +149,7 @@ public:
 
 	void modifyMinute(int8_t modification)
 	{
-		uint8_t minute = alarm.minute;
+		int minute = alarm.minute;
 		if (modification >= 0)
 		{
 			minute += modification;
