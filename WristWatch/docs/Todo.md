@@ -8,6 +8,9 @@
 ## Alarms
 ### Creating functional Alarms
 1. First, I want a serial monitor notification that an alarm's time has occurred
+  1. Calculate timestamp of next alarm
+  2. Compare timestamp to current time
+  3. Set active alarm and change to sound_alarm state
 2. Second, for testing, I want to blink an LED when an alarm occurs
 3. Third, I want to wake the device from deep sleep when the alarm occurs (Use rtc's alarm function?)
 4. When coin motor arrives, I want to to replace LED with MOSFET, coin motor, and introduce power supply
@@ -25,3 +28,6 @@
   - This timer should reset on button press
 - I want the device to wake when any button is pressed
 - I want the device to wake on a timed schedule when any alarm is present
+
+## Tech Debt
+1. `changeToState()` should only be called at the end of the loop. Make sure that only one state change happens per loop
