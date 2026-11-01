@@ -10,6 +10,7 @@
 #include <alarms/AlarmBuilder.h>
 #include <BatteryManagement.h>
 #include <update_agents/UpdateAgents.h>
+#include <set_time/TimeSetter.h>
 
 // TODO: Move state management into a new header
 void changeToState(State newState);
@@ -23,10 +24,14 @@ Display *display;
 AlarmBuilder *alarmBuilder;
 Alarm alarmBuilderAlarm;
 
+TimeSetter timeSetter;
+
 time_t currentTime = 0;
 
 Menu mainMenu(
-	{MenuOption("ls Alarms", []()
+	{MenuOption("Set Time", []()
+				{ changeToState(SET_TIME); }),
+	 MenuOption("ls Alarms", []()
 				{ changeToState(SHOW_ALARMS); }),
 	 MenuOption("Make Alarm", []()
 				{ changeToState(MAKE_ALARM); }),
@@ -114,6 +119,9 @@ void displayByState()
 	case MAKE_ALARM:
 		alarmBuilder->buildAlarm(alarmBuilderAlarm);
 		display->displayAlarm(alarmBuilderAlarm, alarmBuilder->getCursorLocation());
+		break;
+	case SET_TIME:
+		display->settingTime(timeSetter.getLocalTime(), timeSetter.getTimeCursor());
 		break;
 	default:
 		break;
@@ -211,6 +219,17 @@ void changeToState(State newState)
 						} });
 		setCallback(b->sb(), PRESSED, []()
 					{ Serial.println("In make alarms, SB was pressed"); alarmBuilder->modifySelected(-1); });
+		break;
+	case SET_TIME:
+		timeSetter.initialize(currentTime);
+		setCallback(b->bl(), PRESSED, []()
+					{ Serial.println("SET_TIME BL."); changeToState(MAIN_MENU); });
+		setCallback(b->br(), PRESSED, []()
+					{ Serial.println("SET_TIME BR."); changeToState(MAIN_MENU); });
+		setCallback(b->st(), PRESSED, []()
+					{ Serial.println("SET_TIME ST."); changeToState(MAIN_MENU); });
+		setCallback(b->sb(), PRESSED, []()
+					{ Serial.println("SET_TIME SB."); changeToState(MAIN_MENU); });
 		break;
 	default:
 		Serial.print("Unsupported state? ");

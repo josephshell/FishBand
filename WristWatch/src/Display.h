@@ -3,7 +3,9 @@
 
 #include <Arduino.h>
 #include <ctime>
-#include <alarms/AlarmBuilder.h>
+
+#include <alarms/Alarms.h>
+#include <time_helpers/TimeHelpers.h>
 
 class Display
 {
@@ -15,6 +17,8 @@ public:
 	virtual void displayMenu(Menu &menu) = 0;
 
 	virtual void displayAlarm(Alarm &alarm, AlarmCursorLocation cursor) = 0;
+
+	virtual void settingTime(const tm *localTime, TimeHelpers::TimeCursor timeCursor) = 0;
 
 	virtual void displayImage(uint8_t x, uint8_t y, uint8_t w, uint8_t h, const uint8_t *bitmap) = 0;
 

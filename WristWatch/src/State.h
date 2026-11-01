@@ -14,6 +14,7 @@ enum State
 	MAIN_MENU,
 	SHOW_ALARMS,
 	MAKE_ALARM,
+	SET_TIME,
 	TEST_PAGE
 };
 

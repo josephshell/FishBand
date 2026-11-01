@@ -8,6 +8,10 @@
 #include <Wire.h>
 #include <WatchFaces.h>
 #include <stdio.h> // For snprintf
+#include <alarms/Alarms.h>
+#include <oled_display/OledDisplayFunctions.h>
+#include <oled_display/OledHelpers.h>
+
 
 // 16 px monospaced font
 const uint8_t *font_time = u8g2_font_inr16_mn;
@@ -28,20 +32,6 @@ private:
 	U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2;
 	const uint8_t width = 128;
 	const uint8_t height = 64;
-
-	void drawStrCentered(uint8_t y, const char *str)
-	{
-		uint8_t strWidth = u8g2.getStrWidth(str);
-		if (strWidth > width)
-		{
-			u8g2.drawStr(0, y, str);
-		}
-		else
-		{
-			uint8_t x = (width - strWidth) / 2;
-			u8g2.drawStr(x, y, str);
-		}
-	}
 
 public:
 	OledDisplay() : u8g2(U8G2_R0, U8X8_PIN_NONE) {}
@@ -94,18 +84,18 @@ public:
 			{
 				// Black for highlighted option
 				u8g2.setDrawColor(0);
-				drawStrCentered(40, optionMiddle);
+				oled::drawStrCentered(40, optionMiddle, &u8g2);
 				u8g2.setDrawColor(1);
 			}
 			// Blue for non highlighted
 			u8g2.setDrawColor(1);
 			if (optionBottom)
 			{
-				drawStrCentered(60, optionBottom);
+				oled::drawStrCentered(60, optionBottom, &u8g2);
 			}
 			if (optionTop)
 			{
-				drawStrCentered(18, optionTop);
+				oled::drawStrCentered(18, optionTop, &u8g2);
 			}
 		} while (u8g2.nextPage());
 	}
@@ -179,6 +169,11 @@ public:
 		} while (u8g2.nextPage());
 	}
 
+	void settingTime(const tm *localTime, TimeHelpers::TimeCursor timeCursor) override
+	{
+		OledDisplayFunctions::displaySettingTime(localTime, timeCursor, &u8g2);
+	}
+
 	void displayImage(uint8_t x, uint8_t y, uint8_t w, uint8_t h, const uint8_t *bitmap) override
 	{
 		u8g2.firstPage();
@@ -204,13 +199,13 @@ public:
 			// Black for highlighted option
 			u8g2.setDrawColor(0);
 			// Center Option
-			drawStrCentered(40, current);
+			oled::drawStrCentered(40, current, &u8g2);
 			// Blue for non highlighted
 			u8g2.setDrawColor(1);
 			// Top Option
-			drawStrCentered(18, previous);
+			oled::drawStrCentered(18, previous, &u8g2);
 			// Bottom Option
-			drawStrCentered(60, next);
+			oled::drawStrCentered(60, next, &u8g2);
 		} while (u8g2.nextPage());
 	}
 

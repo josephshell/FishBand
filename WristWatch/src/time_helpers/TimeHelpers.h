@@ -1,0 +1,16 @@
+#ifndef TIME_HELPERS_H
+#define TIME_HELPERS_H
+
+namespace TimeHelpers
+{
+    enum TimeCursor
+    {
+        HOUR,
+        MINUTE,
+        SECOND,
+        MONTH,
+        DAY,
+        YEAR
+    };
+}
+#endif
