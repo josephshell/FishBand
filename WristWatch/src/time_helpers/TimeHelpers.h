@@ -10,7 +10,9 @@ namespace TimeHelpers
         SECOND,
         MONTH,
         DAY,
-        YEAR
+        YEAR,
+        CANCEL,
+        DONE
     };
 }
 #endif
