@@ -56,7 +56,7 @@ void setup()
 
 	// region: Configuration
 	b = new Esp32C3ButtonImpl();
-	tp = new DS1307TimeProvider();
+	tp = new DS3231TimeProvider();
 	display = new OledDisplay();
 	// endregion
 

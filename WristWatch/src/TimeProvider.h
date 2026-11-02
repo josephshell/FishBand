@@ -15,10 +15,10 @@ public:
 	virtual ~TimeProvider() = default;
 };
 
-class DS1307TimeProvider : public TimeProvider
+class DS3231TimeProvider : public TimeProvider
 {
 private:
-	RTC_DS1307 rtc;
+	RTC_DS3231 rtc;
 	bool rtcFailure = false;
 
 public:
