@@ -125,7 +125,7 @@ void applyHighlight(TimeCursor timeCursor, U8G2_SH1106_128X64_NONAME_1_HW_I2C *u
         case TimeHelpers::DONE:
             u8g2->setFont(fontButtons);
             highlightX1 = getXOfDoneButton(u8g2);
-            highlightX2 = highlightX2 + u8g2->getStrWidth("DONE");
+            highlightX2 = highlightX1 + u8g2->getStrWidth("DONE");
             highlightY = buttonYValue + 2;
             break;
         default:
