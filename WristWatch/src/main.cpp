@@ -227,7 +227,18 @@ void changeToState(State newState)
 		setCallback(b->br(), PRESSED, []()
 					{ Serial.println("SET_TIME BR."); timeSetter.incrementCursor(); });
 		setCallback(b->st(), PRESSED, []()
-					{ Serial.println("SET_TIME ST."); timeSetter.incrementTimeSetting(); });
+					{
+						Serial.println("SET_TIME ST.");
+						int result = timeSetter.incrementTimeSetting(); 
+						if (result == 1) {
+							Serial.println("User requested to save the time.");
+							tp->setCurrentTime(timeSetter.getCurrentTimeSetting());
+							changeToState(MAIN_DISPLAY);
+						} else if (result == -1) {
+							Serial.println("User requested to cancel setting the time.");
+							changeToState(MAIN_DISPLAY);
+						}
+					});
 		setCallback(b->sb(), PRESSED, []()
 					{ Serial.println("SET_TIME SB."); timeSetter.decrementTimeSetting(); });
 		break;

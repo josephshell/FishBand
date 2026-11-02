@@ -10,9 +10,8 @@ class TimeProvider
 {
 public:
 	virtual void initialize() = 0;
-
 	virtual time_t getCurrentTime() = 0;
-
+	virtual void setCurrentTime(time_t newTime) = 0;
 	virtual ~TimeProvider() = default;
 };
 
@@ -41,6 +40,14 @@ public:
 		else
 		{
 			return 0;
+		}
+	}
+
+	void setCurrentTime(time_t newTime) override
+	{
+		if (!rtcFailure)
+		{
+			rtc.adjust(DateTime(newTime));
 		}
 	}
 };

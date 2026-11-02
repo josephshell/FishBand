@@ -8,6 +8,7 @@ tm localTime;
 void TimeSetter::initialize(time_t initialTimeSetting)
 {
     currentTimeSetting = initialTimeSetting;
+    timeCursor = TimeHelpers::HOUR;
 }
 
 tm* TimeSetter::getLocalTime()
@@ -35,9 +36,10 @@ void TimeSetter::decrementCursor()
     decrementEnum(timeCursor, TimeHelpers::SENTINEL);
 }
 
-void TimeSetter::incrementTimeSetting()
+int TimeSetter::incrementTimeSetting()
 {
     tm* localTimePtr = getLocalTime();
+    int returnValue = 0;
     switch (timeCursor)
     {
         case TimeHelpers::HOUR:
@@ -59,15 +61,16 @@ void TimeSetter::incrementTimeSetting()
             localTimePtr->tm_year++;
             break;
         case TimeHelpers::CANCEL:
-            // Handle cancel action 
+            returnValue = -1;
             break;
         case TimeHelpers::DONE:
-            // Handle done action 
+            returnValue = 1;
             break;
         default:
             break;
     }
     currentTimeSetting = mktime(localTimePtr);
+    return returnValue;
 }
 
 void TimeSetter::decrementTimeSetting()

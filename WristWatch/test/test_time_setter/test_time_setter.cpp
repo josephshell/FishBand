@@ -150,6 +150,25 @@ void test_change_year()
     TEST_ASSERT_EQUAL(115, localTime->tm_year); // Year is 2015
 }
 
+void test_cancel_and_done()
+{
+    TimeSetter timeSetter;
+    timeSetter.initialize(initialTime);
+    timeSetter.incrementCursor(); // Move cursor to minute
+    timeSetter.incrementCursor(); // Move cursor to second
+    timeSetter.incrementCursor(); // Move cursor to month
+    timeSetter.incrementCursor(); // Move cursor to day
+    timeSetter.incrementCursor(); // Move cursor to year
+    timeSetter.incrementCursor(); // Move cursor to cancel
+
+    int result = timeSetter.incrementTimeSetting();
+    TEST_ASSERT_EQUAL(-1, result); // Cancel should return -1
+
+    timeSetter.incrementCursor(); // Move cursor to done
+    result = timeSetter.incrementTimeSetting();
+    TEST_ASSERT_EQUAL(1, result); // Done should return 1
+}
+
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
@@ -160,7 +179,7 @@ int main(int argc, char **argv)
     RUN_TEST(test_change_month);
     RUN_TEST(test_change_day);
     RUN_TEST(test_change_year);
-
+    RUN_TEST(test_cancel_and_done);
 
     UNITY_END();
 }

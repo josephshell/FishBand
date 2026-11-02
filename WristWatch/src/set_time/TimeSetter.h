@@ -13,6 +13,14 @@ private:
 
 public:
     /**
+     * @brief Returns the current time setting as a time_t value.
+     */
+    time_t getCurrentTimeSetting() const
+    {
+        return currentTimeSetting;
+    }
+
+    /**
      * @brief Initializes the TimeSetter with an initial time setting.
      */
     void initialize(time_t initialTimeSetting);
@@ -39,8 +47,10 @@ public:
 
     /**
      * @brief Increments the value of the time setting at the current cursor position (e.g., increases the hour, minute, etc.).
+     *
+     * @return 0 if the increment was successful, 1 if the user just requested to save the time, and -1 if the user just requested to cancel setting the time
      */
-    void incrementTimeSetting();
+    int incrementTimeSetting();
 
     /**
      * @brief Decrements the value of the time setting at the current cursor position (e.g., decreases the hour, minute, etc.).
