@@ -223,9 +223,9 @@ void changeToState(State newState)
 	case SET_TIME:
 		timeSetter.initialize(currentTime);
 		setCallback(b->bl(), PRESSED, []()
-					{ Serial.println("SET_TIME BL."); changeToState(MAIN_MENU); });
+					{ Serial.println("SET_TIME BL."); timeSetter.decrementCursor(); });
 		setCallback(b->br(), PRESSED, []()
-					{ Serial.println("SET_TIME BR."); changeToState(MAIN_MENU); });
+					{ Serial.println("SET_TIME BR."); timeSetter.incrementCursor(); });
 		setCallback(b->st(), PRESSED, []()
 					{ Serial.println("SET_TIME ST."); changeToState(MAIN_MENU); });
 		setCallback(b->sb(), PRESSED, []()

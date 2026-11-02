@@ -17,6 +17,10 @@ public:
     tm *getLocalTime();
 
     TimeHelpers::TimeCursor getTimeCursor();
+
+    void incrementCursor();
+
+    void decrementCursor();
 };
 
 #endif

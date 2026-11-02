@@ -12,7 +12,8 @@ namespace TimeHelpers
         DAY,
         YEAR,
         CANCEL,
-        DONE
+        DONE,
+        SENTINEL // Indicates end of enum, not a valid value
     };
 }
 #endif
