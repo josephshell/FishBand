@@ -8,8 +8,8 @@
 class TimeSetter
 {
 private:
-    time_t currentTimeSetting;
-    TimeHelpers::TimeCursor timeCursor;
+    time_t currentTimeSetting = 0;
+    TimeHelpers::TimeCursor timeCursor = TimeHelpers::HOUR;
 
 public:
     /**
@@ -36,6 +36,16 @@ public:
      * @brief Decrements the time cursor to the previous position (e.g., from minute to hour). Wraps around to the end if decrementing beyond the beginning.
      */
     void decrementCursor();
+
+    /**
+     * @brief Increments the value of the time setting at the current cursor position (e.g., increases the hour, minute, etc.).
+     */
+    void incrementTimeSetting();
+
+    /**
+     * @brief Decrements the value of the time setting at the current cursor position (e.g., decreases the hour, minute, etc.).
+     */
+    void decrementTimeSetting();
 };
 
 #endif

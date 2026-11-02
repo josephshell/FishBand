@@ -227,9 +227,9 @@ void changeToState(State newState)
 		setCallback(b->br(), PRESSED, []()
 					{ Serial.println("SET_TIME BR."); timeSetter.incrementCursor(); });
 		setCallback(b->st(), PRESSED, []()
-					{ Serial.println("SET_TIME ST."); changeToState(MAIN_MENU); });
+					{ Serial.println("SET_TIME ST."); timeSetter.incrementTimeSetting(); });
 		setCallback(b->sb(), PRESSED, []()
-					{ Serial.println("SET_TIME SB."); changeToState(MAIN_MENU); });
+					{ Serial.println("SET_TIME SB."); timeSetter.decrementTimeSetting(); });
 		break;
 	default:
 		Serial.print("Unsupported state? ");
