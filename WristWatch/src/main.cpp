@@ -87,6 +87,7 @@ void actionsOnTheSecond()
 	batteryLevel = BatteryManagement::getBatteryLevel();
 
 	// Check alarms to see if they should be going off
+	
 }
 
 /**
