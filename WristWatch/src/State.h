@@ -15,6 +15,7 @@ enum State
 	SHOW_ALARMS,
 	MAKE_ALARM,
 	SET_TIME,
+	SOUND_ALARM,
 	TEST_PAGE
 };
 

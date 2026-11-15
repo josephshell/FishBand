@@ -1,6 +1,8 @@
 #ifndef ALARMS_H
 #define ALARMS_H
 
+#include <stdio.h> // For snprintf
+
 enum AlarmFrequency
 {
 	EVDY, // Every day
@@ -33,6 +35,24 @@ struct Alarm
 		minute = 0;
 		isMeridiemAm = false;
 		freq = ONCE;
+	}
+
+	char *toString(char *outputBuffer, size_t bufferSize)
+	{
+		snprintf(outputBuffer, bufferSize, "%02d:%02d %s %s", hour, minute, isMeridiemAm ? "AM" : "PM", getFrequencyStr(freq));
+		return outputBuffer;
+	}
+
+	int hour24() const
+	{
+		if (isMeridiemAm)
+		{
+			return hour % 12;
+		}
+		else
+		{
+			return (hour % 12) + 12;
+		}
 	}
 };
 #endif

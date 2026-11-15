@@ -205,12 +205,6 @@ public:
 		}
 	}
 
-	char *alarmToString(char *outputBuffer, size_t bufferSize)
-	{
-		snprintf(outputBuffer, bufferSize, "%02d:%02d %s %s", alarm.hour, alarm.minute, alarm.isMeridiemAm ? "AM" : "PM", getFrequencyStr(alarm.freq));
-		return outputBuffer;
-	}
-
 	Alarm buildAlarm(Alarm& outputAlarm)
 	{
 		outputAlarm.hour = alarm.hour;

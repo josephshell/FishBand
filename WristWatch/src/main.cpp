@@ -8,6 +8,7 @@
 #include <OledDisplay.h>
 #include <WatchFaces.h>
 #include <alarms/AlarmBuilder.h>
+#include <alarms/TriggerableAlarm.h>
 #include <BatteryManagement.h>
 #include <update_agents/UpdateAgents.h>
 #include <set_time/TimeSetter.h>
@@ -17,6 +18,8 @@ void changeToState(State newState);
 void displayByState();
 void actionsOnTheSecond();
 
+void handleAlarmTriggered(TriggerableAlarm &alarm);
+
 ButtonInterface *b;
 TimeProvider *tp;
 Display *display;
@@ -24,7 +27,11 @@ Display *display;
 AlarmBuilder *alarmBuilder;
 Alarm alarmBuilderAlarm;
 
+TriggerableAlarm *activeAlarm = nullptr;
+std::vector<TriggerableAlarm> alarms;
+
 TimeSetter timeSetter;
+tm *timeSetterLocalTimePtr = new tm();
 
 time_t currentTime = 0;
 
@@ -73,6 +80,10 @@ void setup()
 void loop()
 {
 	unsigned long currentMillis = millis();
+	if (activeAlarm)
+	{
+		changeToState(SOUND_ALARM);
+	}
 	displayByState();
 	UpdateAgents::pollAgents(currentMillis);
 	pollButtons();
@@ -88,6 +99,16 @@ void actionsOnTheSecond()
 
 	// Check alarms to see if they should be going off
 	
+	if (!activeAlarm) {
+		for (TriggerableAlarm &alarm : alarms)
+		{
+			if (alarm.shouldTrigger(currentTime))
+			{
+				activeAlarm = &alarm;
+				handleAlarmTriggered(alarm);
+			}
+		}
+	}
 }
 
 /**
@@ -122,7 +143,15 @@ void displayByState()
 		display->displayAlarm(alarmBuilderAlarm, alarmBuilder->getCursorLocation());
 		break;
 	case SET_TIME:
-		display->settingTime(timeSetter.getLocalTime(), timeSetter.getTimeCursor());
+		TimeHelpers::getLocalTime(timeSetterLocalTimePtr, timeSetter.getCurrentTimeSetting());
+		display->settingTime(timeSetterLocalTimePtr, timeSetter.getTimeCursor());
+		break;
+	case SOUND_ALARM:
+		if (activeAlarm)
+		{
+			Alarm *alarm = activeAlarm->getAlarm();
+			display->displayAlarm(*alarm, HOUR);
+		}
 		break;
 	default:
 		break;
@@ -208,13 +237,23 @@ void changeToState(State newState)
 							Serial.println("Finished building alarm!");
 							Serial.print("Your new alarm is: ");
 							char buffer[32];
-							Serial.println(alarmBuilder->alarmToString(buffer, sizeof(buffer)));
+							Alarm newAlarm;
+							alarmBuilder->buildAlarm(newAlarm);
+							Serial.println(newAlarm.toString(buffer, sizeof(buffer)));
 							alarmsMenu.addOption(buffer, []()
 							{
 								// TODO: Make the function have access to the menu option name
 								Serial.print("In alarms menu, selected alarm");
 								changeToState(MAIN_DISPLAY);
 							});
+							TriggerableAlarm newTriggerableAlarm(newAlarm);
+							newTriggerableAlarm.recalculateNextTriggerTime(currentTime);
+							alarms.emplace_back(newTriggerableAlarm);
+							Serial.println("New alarm debug info:");
+							Serial.print("Current time: ");
+							Serial.print(currentTime);
+							Serial.print(" next alarm trigger time: ");
+							Serial.println(newTriggerableAlarm.getNextTriggerTime());
 							Serial.println("Returning to main menu");
 							changeToState(MAIN_MENU);
 						} });
@@ -243,8 +282,25 @@ void changeToState(State newState)
 		setCallback(b->sb(), PRESSED, []()
 					{ Serial.println("SET_TIME SB."); timeSetter.decrementTimeSetting(); });
 		break;
+	case SOUND_ALARM:
+		setCallback(b->bl(), PRESSED, []()
+					{ Serial.println("SOUND_ALARM BL."); activeAlarm = nullptr; changeToState(MAIN_DISPLAY); });
+		setCallback(b->br(), PRESSED, []()
+					{ Serial.println("SOUND_ALARM BR."); activeAlarm = nullptr; changeToState(MAIN_DISPLAY); });
+		setCallback(b->st(), PRESSED, []()
+					{ Serial.println("SOUND_ALARM ST."); activeAlarm = nullptr; changeToState(MAIN_DISPLAY); });
+		setCallback(b->sb(), PRESSED, []()
+					{ Serial.println("SOUND_ALARM SB."); activeAlarm = nullptr; changeToState(MAIN_DISPLAY); });
+		break;
 	default:
 		Serial.print("Unsupported state? ");
 		Serial.println(newState);
 	}
+}
+
+void handleAlarmTriggered(TriggerableAlarm &alarm)
+{
+	Serial.print("Alarm triggered: ");
+	char buffer[32];
+	Serial.println(alarm.toString(buffer, sizeof(buffer)));
 }
