@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <State.h>
-#include <TimeProvider.h>
+#include <time_provider/TimeProvider.h>
+#include <time_provider/ds3231/DS3231TimeProvider.h>
 #include <ButtonManagement.h>
 #include <Esp32C3ButtonImpl.h>
 #include <Menu.h>
@@ -39,8 +40,10 @@ Menu mainMenu(
 				{ changeToState(TEST_PAGE); }),
 	 MenuOption("Return", []()
 				{ changeToState(MAIN_DISPLAY); })});
+
 Menu alarmsMenu({MenuOption("Return", []()
 							{ changeToState(MAIN_MENU); })});
+std::vector<Alarm> alarmsList{};
 
 int8_t batteryLevel = 100;
 unsigned long batteryUpdateDelay = 30000;
@@ -204,12 +207,15 @@ void changeToState(State newState)
 					{
 						Serial.println("In make alarms, ST was pressed");
 						if (alarmBuilder->modifySelected(1) == 0) {
-
+							Alarm newAlarm{};
+							alarmBuilder->buildAlarm(newAlarm);
+							alarmsList.push_back(newAlarm);
+							char alarmString[32];
+							alarmBuilder->alarmToString(alarmString, sizeof(alarmString));
 							Serial.println("Finished building alarm!");
 							Serial.print("Your new alarm is: ");
-							char buffer[32];
-							Serial.println(alarmBuilder->alarmToString(buffer, sizeof(buffer)));
-							alarmsMenu.addOption(buffer, []()
+							Serial.println(alarmString);
+							alarmsMenu.addOption(alarmString, []()
 							{
 								// TODO: Make the function have access to the menu option name
 								Serial.print("In alarms menu, selected alarm");

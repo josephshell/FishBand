@@ -1,6 +1,8 @@
 #ifndef TIME_HELPERS_H
 #define TIME_HELPERS_H
 
+#include <ctime>
+
 namespace TimeHelpers
 {
     enum TimeCursor
@@ -15,5 +17,7 @@ namespace TimeHelpers
         DONE,
         SENTINEL // Indicates end of enum, not a valid value
     };
+    
+    void getLocalTime(tm *localTime, time_t currentTime);
 }
 #endif
