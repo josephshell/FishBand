@@ -27,6 +27,9 @@ struct Alarm
 	bool isMeridiemAm = false;
 	AlarmFrequency freq = ONCE;
 
+	Alarm() {};
+	Alarm(int hour, int minute, bool isAM, AlarmFrequency freq) : hour(hour), minute(minute), isMeridiemAm(isAM), freq(freq) {};
+
 	void clear()
 	{
 		hour = 12;

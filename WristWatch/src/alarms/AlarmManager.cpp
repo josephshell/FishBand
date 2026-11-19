@@ -15,13 +15,13 @@ void AlarmWithTime::recalculateTriggerTime(time_t currentTime)
     switch (alarm.freq)
     {
     case EVDY:
-        while (currentTime > nextTriggerTime)
+        while (currentTime >= nextTriggerTime)
         {
             nextTriggerTime += SECONDS_IN_A_DAY;
         }
         break;
     case WKDY:
-        while (currentTime > nextTriggerTime)
+        while (currentTime >= nextTriggerTime)
         {
             nextTriggerTime += SECONDS_IN_A_DAY;
         }
@@ -32,7 +32,7 @@ void AlarmWithTime::recalculateTriggerTime(time_t currentTime)
             TimeHelpers::getLocalTime(&triggerLocalTime, nextTriggerTime);
         }
     case WKND:
-        while (currentTime > nextTriggerTime)
+        while (currentTime >= nextTriggerTime)
         {
             nextTriggerTime += SECONDS_IN_A_DAY;
         }
@@ -49,9 +49,36 @@ void AlarmWithTime::recalculateTriggerTime(time_t currentTime)
     }
 }
 
+void moveToNextValidDay(tm &alarmTrigger, const Alarm& alarm)
+{
+    //TODO: Calculate next valid day based on Frequency and current day setting
+    alarmTrigger.tm_mday += 1;
+    // Normalizes time struct
+    mktime(&alarmTrigger);
+}
+
 time_t calculateTriggerTime(time_t currentTime, Alarm alarm)
 {
-    return 0;
+    tm currentTimeAsLocal{};
+    TimeHelpers::getLocalTime(&currentTimeAsLocal, currentTime);
+    // Duplicate current datetime for date, then fix time
+    tm nextTriggerLocalTime = currentTimeAsLocal;
+    int alarmHour;
+    if (alarm.isMeridiemAm) {
+        alarmHour = alarm.hour == 12 ? 0 : alarm.hour;
+    } else
+    {
+        alarmHour = alarm.hour == 12 ? 12 : alarm.hour + 12;
+    }
+    nextTriggerLocalTime.tm_hour = alarmHour;
+    nextTriggerLocalTime.tm_min = alarm.minute;
+    time_t alarmTriggerTimestamp = mktime(&nextTriggerLocalTime);
+    if (alarmTriggerTimestamp < currentTime)
+    {
+        moveToNextValidDay(nextTriggerLocalTime, alarm);
+        alarmTriggerTimestamp = mktime(&nextTriggerLocalTime);
+    }
+    return alarmTriggerTimestamp;
 }
 
 AlarmManager::AlarmManager(TimeProvider *tp)
@@ -71,7 +98,7 @@ std::vector<Alarm> AlarmManager::alarmsMustTrigger()
     std::vector<Alarm> toTrigger{};
     for (AlarmWithTime &alarm : timedAlarms)
     {
-        if (alarm.nextTriggerTime < tp->getCurrentTime())
+        if (alarm.nextTriggerTime <= tp->getCurrentTime())
         {
             toTrigger.push_back(alarm.alarm);
         }
@@ -84,7 +111,7 @@ void AlarmManager::recalculateTriggers()
     time_t currentTime = tp->getCurrentTime();
     for (AlarmWithTime &alarm : timedAlarms)
     {
-        if (alarm.alarm.freq != ONCE && alarm.nextTriggerTime < currentTime)
+        if (alarm.alarm.freq != ONCE && alarm.nextTriggerTime <= currentTime)
         {
             alarm.recalculateTriggerTime(tp->getCurrentTime());
         }
