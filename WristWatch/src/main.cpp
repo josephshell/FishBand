@@ -9,6 +9,7 @@
 #include <OledDisplay.h>
 #include <WatchFaces.h>
 #include <alarms/AlarmBuilder.h>
+#include <alarms/AlarmManager.h>
 #include <BatteryManagement.h>
 #include <update_agents/UpdateAgents.h>
 #include <set_time/TimeSetter.h>
@@ -24,6 +25,8 @@ Display *display;
 
 AlarmBuilder *alarmBuilder;
 Alarm alarmBuilderAlarm;
+
+AlarmManager *alarmManager;
 
 TimeSetter timeSetter;
 
@@ -43,7 +46,6 @@ Menu mainMenu(
 
 Menu alarmsMenu({MenuOption("Return", []()
 							{ changeToState(MAIN_MENU); })});
-std::vector<Alarm> alarmsList{};
 
 int8_t batteryLevel = 100;
 unsigned long batteryUpdateDelay = 30000;
@@ -66,6 +68,7 @@ void setup()
 	configureButtons(*b);
 	display->initialize();
 	tp->initialize();
+	alarmManager = new AlarmManager(tp);
 
 	UpdateAgents::addAgent("Agent Seconds", 1000, actionsOnTheSecond);
 
@@ -90,7 +93,16 @@ void actionsOnTheSecond()
 	batteryLevel = BatteryManagement::getBatteryLevel();
 
 	// Check alarms to see if they should be going off
-	
+	std::vector<Alarm> toTrigger = alarmManager->alarmsMustTrigger();
+	if (!toTrigger.empty())
+	{
+		Alarm alarm = toTrigger.front();
+		Serial.print("Alarm triggered: ");
+		char alarmString[32];
+		alarm.toString(alarmString, sizeof(alarmString));
+		Serial.println(alarmString);
+		alarmManager->recalculateTriggers();
+	}
 }
 
 /**
@@ -209,12 +221,14 @@ void changeToState(State newState)
 						if (alarmBuilder->modifySelected(1) == 0) {
 							Alarm newAlarm{};
 							alarmBuilder->buildAlarm(newAlarm);
-							alarmsList.push_back(newAlarm);
+							time_t nextTriggerTime = alarmManager->registerAlarm(newAlarm);
 							char alarmString[32];
 							alarmBuilder->alarmToString(alarmString, sizeof(alarmString));
 							Serial.println("Finished building alarm!");
 							Serial.print("Your new alarm is: ");
 							Serial.println(alarmString);
+							Serial.print("It will trigger at timestamp: ");
+							Serial.println(nextTriggerTime);
 							alarmsMenu.addOption(alarmString, []()
 							{
 								// TODO: Make the function have access to the menu option name
@@ -244,8 +258,7 @@ void changeToState(State newState)
 						} else if (result == -1) {
 							Serial.println("User requested to cancel setting the time.");
 							changeToState(MAIN_DISPLAY);
-						}
-					});
+						} });
 		setCallback(b->sb(), PRESSED, []()
 					{ Serial.println("SET_TIME SB."); timeSetter.decrementTimeSetting(); });
 		break;

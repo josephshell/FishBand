@@ -88,11 +88,13 @@ AlarmManager::AlarmManager(TimeProvider *tp)
     this->tp = tp;
 }
 
-int AlarmManager::registerAlarm(Alarm alarm)
+
+time_t AlarmManager::registerAlarm(Alarm alarm)
 {
     alarms.push_back(alarm);
-    timedAlarms.emplace_back(alarm, calculateTriggerTime(tp->getCurrentTime(), alarm));
-    return 0;
+    time_t triggerTime = calculateTriggerTime(tp->getCurrentTime(), alarm);
+    timedAlarms.emplace_back(alarm, triggerTime);
+    return triggerTime;
 }
 
 std::vector<Alarm> AlarmManager::alarmsMustTrigger()

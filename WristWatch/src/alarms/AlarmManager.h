@@ -38,9 +38,9 @@ public:
     /**
      * @brief Registers an alarm to be managed
      *
-     * @returns 0 if successful, 1 if failure
+     * @returns the next trigger time for the alarm, or 0 if failure
      */
-    int registerAlarm(Alarm alarm);
+    time_t registerAlarm(Alarm alarm);
 
     /**
      * @brief Checks all registered alarms for those that must trigger and returns them.
