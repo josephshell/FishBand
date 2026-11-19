@@ -76,12 +76,34 @@ void everyday_alarms_trigger_everyday()
     TEST_ASSERT_FALSE(manager.alarmsMustTrigger().empty());
 }
 
+void one_off_alarms_do_not_retrigger()
+{
+    TestTimeProvider tp = TestTimeProvider();
+    AlarmManager manager = AlarmManager(&tp);
+    Alarm noonAlarm = Alarm(12, 00, false, ONCE);
+
+    tp.changeTimeForTests(NOON_THURSDAY - ONE_HOUR);
+    manager.registerAlarm(noonAlarm);
+    // assert alarm not triggered early
+    TEST_ASSERT_TRUE(manager.alarmsMustTrigger().empty());
+    // assert alarm triggers at alarm time
+    tp.changeTimeForTests(NOON_THURSDAY);
+    TEST_ASSERT_FALSE(manager.alarmsMustTrigger().empty());
+    // assert that recalculating triggers causes alarm to disengage
+    manager.recalculateTriggers();
+    TEST_ASSERT_TRUE(manager.alarmsMustTrigger().empty());
+    // assert that alarm doesn't trigger the next day
+    tp.changeTimeForTests(NOON_THURSDAY + ONE_DAY);
+    TEST_ASSERT_TRUE(manager.alarmsMustTrigger().empty());
+}
+
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
 
     RUN_TEST(alarm_triggers_at_correct_time);
     RUN_TEST(everyday_alarms_trigger_everyday);
+    RUN_TEST(one_off_alarms_do_not_retrigger);
 
     UNITY_END();
 }

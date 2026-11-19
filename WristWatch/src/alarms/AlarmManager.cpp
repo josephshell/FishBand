@@ -43,7 +43,9 @@ void AlarmWithTime::recalculateTriggerTime(time_t currentTime)
             TimeHelpers::getLocalTime(&triggerLocalTime, nextTriggerTime);
         }
     case ONCE:
-        nextTriggerTime = 0; // DO not retrigger
+        // DO not retrigger
+        enabled = false;
+        nextTriggerTime = 0;
     default:
         break;
     }
@@ -98,7 +100,7 @@ std::vector<Alarm> AlarmManager::alarmsMustTrigger()
     std::vector<Alarm> toTrigger{};
     for (AlarmWithTime &alarm : timedAlarms)
     {
-        if (alarm.nextTriggerTime <= tp->getCurrentTime())
+        if (alarm.enabled && alarm.nextTriggerTime <= tp->getCurrentTime())
         {
             toTrigger.push_back(alarm.alarm);
         }
@@ -111,7 +113,7 @@ void AlarmManager::recalculateTriggers()
     time_t currentTime = tp->getCurrentTime();
     for (AlarmWithTime &alarm : timedAlarms)
     {
-        if (alarm.alarm.freq != ONCE && alarm.nextTriggerTime <= currentTime)
+        if (alarm.nextTriggerTime <= currentTime)
         {
             alarm.recalculateTriggerTime(tp->getCurrentTime());
         }
