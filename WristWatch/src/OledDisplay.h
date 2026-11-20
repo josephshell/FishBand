@@ -174,7 +174,7 @@ public:
 		OledDisplayFunctions::displaySettingTime(localTime, timeCursor, &u8g2);
 	}
 
-	void activeAlarm(time_t currentTime) {
+	void activeAlarm(time_t currentTime) override {
 		std::tm *localTime = std::localtime(&currentTime);
 		char timeBuffer[17];
 		std::strftime(timeBuffer, sizeof(timeBuffer), "%I:%M %p", localTime);
