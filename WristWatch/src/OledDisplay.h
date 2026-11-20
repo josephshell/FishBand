@@ -174,6 +174,23 @@ public:
 		OledDisplayFunctions::displaySettingTime(localTime, timeCursor, &u8g2);
 	}
 
+	void activeAlarm(time_t currentTime) {
+		std::tm *localTime = std::localtime(&currentTime);
+		char timeBuffer[17];
+		std::strftime(timeBuffer, sizeof(timeBuffer), "%I:%M %p", localTime);
+
+		u8g2.firstPage();
+		do
+		{
+			if (currentTime % 2 == 0)
+			{
+				u8g2.setFontMode(1);
+				u8g2.setFont(font_time);
+				u8g2.drawStr(32, 42, timeBuffer);
+			}
+		} while (u8g2.nextPage());
+	}
+
 	void displayImage(uint8_t x, uint8_t y, uint8_t w, uint8_t h, const uint8_t *bitmap) override
 	{
 		u8g2.firstPage();

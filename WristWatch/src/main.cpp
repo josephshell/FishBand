@@ -27,6 +27,7 @@ AlarmBuilder *alarmBuilder;
 Alarm alarmBuilderAlarm;
 
 AlarmManager *alarmManager;
+Alarm *activeAlarm;
 
 TimeSetter timeSetter;
 
@@ -82,6 +83,10 @@ void loop()
 	displayByState();
 	UpdateAgents::pollAgents(currentMillis);
 	pollButtons();
+	if (activeAlarm && state != ALARM_ACTIVE)
+	{
+		changeToState(ALARM_ACTIVE);
+	}
 }
 
 void actionsOnTheSecond()
@@ -96,10 +101,11 @@ void actionsOnTheSecond()
 	std::vector<Alarm> toTrigger = alarmManager->alarmsMustTrigger();
 	if (!toTrigger.empty())
 	{
-		Alarm alarm = toTrigger.front();
+		activeAlarm = new Alarm();
+		*activeAlarm = toTrigger.front();
 		Serial.print("Alarm triggered: ");
 		char alarmString[32];
-		alarm.toString(alarmString, sizeof(alarmString));
+		activeAlarm->toString(alarmString, sizeof(alarmString));
 		Serial.println(alarmString);
 		alarmManager->recalculateTriggers();
 	}
@@ -139,6 +145,8 @@ void displayByState()
 	case SET_TIME:
 		display->settingTime(timeSetter.getAsTm(), timeSetter.getTimeCursor());
 		break;
+	case ALARM_ACTIVE:
+		display->activeAlarm(currentTime);
 	default:
 		break;
 	}
@@ -261,6 +269,28 @@ void changeToState(State newState)
 						} });
 		setCallback(b->sb(), PRESSED, []()
 					{ Serial.println("SET_TIME SB."); timeSetter.decrementTimeSetting(); });
+		break;
+	case ALARM_ACTIVE:
+		setCallback(b->bl(), PRESSED, []()
+					{ 
+						delete activeAlarm;
+						activeAlarm = nullptr;
+						changeToState(MAIN_DISPLAY); });
+		setCallback(b->br(), PRESSED, []()
+					{ 
+						delete activeAlarm;
+						activeAlarm = nullptr;
+						changeToState(MAIN_DISPLAY); });
+		setCallback(b->st(), PRESSED, []()
+					{ 
+						delete activeAlarm;
+						activeAlarm = nullptr;
+						changeToState(MAIN_DISPLAY); });
+		setCallback(b->sb(), PRESSED, []()
+					{ 
+						delete activeAlarm;
+						activeAlarm = nullptr;
+						changeToState(MAIN_DISPLAY); });
 		break;
 	default:
 		Serial.print("Unsupported state? ");
