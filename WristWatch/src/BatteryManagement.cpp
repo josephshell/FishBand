@@ -18,6 +18,7 @@ namespace
 
 namespace BatteryManagement
 {
+    bool debugPrint = false;
     void initialize()
     {
         pinMode(BATTERY_PIN, INPUT);
@@ -29,24 +30,30 @@ namespace BatteryManagement
         int8_t batteryLevel = BATTERY_VALUE_SLOPE * pinVal - 320;
         if (batteryLevel > 100)
         {
-            Serial.print("Battery read more than maximum of ");
-            Serial.print(PIN_VALUE_AT_100_PERCENT);
-            Serial.print(": ");
-            Serial.println(pinVal);
-            Serial.print("Battery Level read as: ");
-            Serial.println(batteryLevel);
-            Serial.println("Returning battery level of -1");
+            if (debugPrint)
+            {
+                Serial.print("Battery read more than maximum of ");
+                Serial.print(PIN_VALUE_AT_100_PERCENT);
+                Serial.print(": ");
+                Serial.println(pinVal);
+                Serial.print("Battery Level read as: ");
+                Serial.println(batteryLevel);
+                Serial.println("Returning battery level of -1");
+            }
             batteryLevel = -1;
         }
         if (batteryLevel < 0)
         {
-            Serial.print("Battery read less safe minimum of ");
-            Serial.print(PIN_VALUE_AT_20_PERCENT);
-            Serial.print(": ");
-            Serial.println(pinVal);
-            Serial.print("Battery Level read as: ");
-            Serial.println(batteryLevel);
-            Serial.println("Returning battery level of -1");
+            if (debugPrint)
+            {
+                Serial.print("Battery read less safe minimum of ");
+                Serial.print(PIN_VALUE_AT_20_PERCENT);
+                Serial.print(": ");
+                Serial.println(pinVal);
+                Serial.print("Battery Level read as: ");
+                Serial.println(batteryLevel);
+                Serial.println("Returning battery level of -1");
+            }
             batteryLevel = -1;
         }
         return batteryLevel;
