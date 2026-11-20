@@ -2,8 +2,8 @@
 #include <time_provider/TimeProvider.h>
 #include <alarms/AlarmManager.h>
 
-// Thursday, November 19, 2026 at 12:00:00 PM UTC-05:00
-const time_t NOON_THURSDAY = 1795107600;
+// Thursday, November 19, 2026 at 12:00:00 PM UTC
+const time_t NOON_THURSDAY = 1795089600;
 
 // Seconds in an hour
 const long ONE_HOUR = 3600;

@@ -137,7 +137,7 @@ void displayByState()
 		display->displayAlarm(alarmBuilderAlarm, alarmBuilder->getCursorLocation());
 		break;
 	case SET_TIME:
-		display->settingTime(timeSetter.getLocalTime(), timeSetter.getTimeCursor());
+		display->settingTime(timeSetter.getAsTm(), timeSetter.getTimeCursor());
 		break;
 	default:
 		break;

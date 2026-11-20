@@ -9,9 +9,9 @@ const long SECONDS_IN_A_DAY = 86400;
 void AlarmWithTime::recalculateTriggerTime(time_t currentTime)
 {
     tm currentLocalTime{};
-    TimeHelpers::getLocalTime(&currentLocalTime, currentTime);
+    TimeHelpers::timestampAsTm(&currentLocalTime, currentTime);
     tm triggerLocalTime{};
-    TimeHelpers::getLocalTime(&triggerLocalTime, nextTriggerTime);
+    TimeHelpers::timestampAsTm(&triggerLocalTime, nextTriggerTime);
     switch (alarm.freq)
     {
     case EVDY:
@@ -25,22 +25,22 @@ void AlarmWithTime::recalculateTriggerTime(time_t currentTime)
         {
             nextTriggerTime += SECONDS_IN_A_DAY;
         }
-        TimeHelpers::getLocalTime(&triggerLocalTime, nextTriggerTime);
+        TimeHelpers::timestampAsTm(&triggerLocalTime, nextTriggerTime);
         while (triggerLocalTime.tm_wday > 4) // after thursday
         {
             nextTriggerTime += SECONDS_IN_A_DAY;
-            TimeHelpers::getLocalTime(&triggerLocalTime, nextTriggerTime);
+            TimeHelpers::timestampAsTm(&triggerLocalTime, nextTriggerTime);
         }
     case WKND:
         while (currentTime >= nextTriggerTime)
         {
             nextTriggerTime += SECONDS_IN_A_DAY;
         }
-        TimeHelpers::getLocalTime(&triggerLocalTime, nextTriggerTime);
+        TimeHelpers::timestampAsTm(&triggerLocalTime, nextTriggerTime);
         while (triggerLocalTime.tm_wday < 5) // before Friday
         {
             nextTriggerTime += SECONDS_IN_A_DAY;
-            TimeHelpers::getLocalTime(&triggerLocalTime, nextTriggerTime);
+            TimeHelpers::timestampAsTm(&triggerLocalTime, nextTriggerTime);
         }
     case ONCE:
         // DO not retrigger
@@ -51,34 +51,37 @@ void AlarmWithTime::recalculateTriggerTime(time_t currentTime)
     }
 }
 
-void moveToNextValidDay(tm &alarmTrigger, const Alarm& alarm)
+void moveToNextValidDay(tm &alarmTrigger, const Alarm &alarm)
 {
-    //TODO: Calculate next valid day based on Frequency and current day setting
+    // TODO: Calculate next valid day based on Frequency and current day setting
     alarmTrigger.tm_mday += 1;
     // Normalizes time struct
-    mktime(&alarmTrigger);
+    TimeHelpers::tmAsTimestamp(&alarmTrigger);
 }
 
 time_t calculateTriggerTime(time_t currentTime, Alarm alarm)
 {
     tm currentTimeAsLocal{};
-    TimeHelpers::getLocalTime(&currentTimeAsLocal, currentTime);
+    TimeHelpers::timestampAsTm(&currentTimeAsLocal, currentTime);
     // Duplicate current datetime for date, then fix time
     tm nextTriggerLocalTime = currentTimeAsLocal;
     int alarmHour;
-    if (alarm.isMeridiemAm) {
+    if (alarm.isMeridiemAm)
+    {
         alarmHour = alarm.hour == 12 ? 0 : alarm.hour;
-    } else
+    }
+    else
     {
         alarmHour = alarm.hour == 12 ? 12 : alarm.hour + 12;
     }
     nextTriggerLocalTime.tm_hour = alarmHour;
     nextTriggerLocalTime.tm_min = alarm.minute;
-    time_t alarmTriggerTimestamp = mktime(&nextTriggerLocalTime);
+    nextTriggerLocalTime.tm_sec = 0;
+    time_t alarmTriggerTimestamp = TimeHelpers::tmAsTimestamp(&nextTriggerLocalTime);
     if (alarmTriggerTimestamp < currentTime)
     {
         moveToNextValidDay(nextTriggerLocalTime, alarm);
-        alarmTriggerTimestamp = mktime(&nextTriggerLocalTime);
+        alarmTriggerTimestamp = TimeHelpers::tmAsTimestamp(&nextTriggerLocalTime);
     }
     return alarmTriggerTimestamp;
 }
@@ -87,7 +90,6 @@ AlarmManager::AlarmManager(TimeProvider *tp)
 {
     this->tp = tp;
 }
-
 
 time_t AlarmManager::registerAlarm(Alarm alarm)
 {

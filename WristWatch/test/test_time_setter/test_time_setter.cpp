@@ -1,8 +1,8 @@
 #include <unity.h>
 #include <set_time/TimeSetter.h>
 
-// Set initial time to a known value 9/15/2020 12:00:00 AM EST
-time_t initialTime = 1600142400;
+// Set initial time to a known value 9/15/2020 12:00:00 AM UTC
+time_t initialTime = 1600128000;
 
 void setup(void)
 {
@@ -18,7 +18,7 @@ void test_change_hour()
 
     timeSetter.incrementTimeSetting();
 
-    tm* localTime = timeSetter.getLocalTime();
+    tm* localTime = timeSetter.getAsTm();
     TEST_ASSERT_EQUAL(1, localTime->tm_hour);
     timeSetter.decrementTimeSetting();
     TEST_ASSERT_EQUAL(0, localTime->tm_hour);
@@ -41,7 +41,7 @@ void test_change_minute()
     timeSetter.incrementCursor(); // Move cursor to minute
 
     timeSetter.incrementTimeSetting();
-    tm* localTime = timeSetter.getLocalTime();
+    tm* localTime = timeSetter.getAsTm();
     TEST_ASSERT_EQUAL(1, localTime->tm_min);
     timeSetter.decrementTimeSetting();
     timeSetter.decrementTimeSetting();
@@ -67,7 +67,7 @@ void test_change_second()
     timeSetter.incrementCursor(); // Move cursor to second
 
     timeSetter.incrementTimeSetting();
-    tm* localTime = timeSetter.getLocalTime();
+    tm* localTime = timeSetter.getAsTm();
     TEST_ASSERT_EQUAL(1, localTime->tm_sec);
     timeSetter.decrementTimeSetting();
     timeSetter.decrementTimeSetting();
@@ -93,7 +93,7 @@ void test_change_month()
     timeSetter.incrementCursor(); // Move cursor to second
     timeSetter.incrementCursor(); // Move cursor to month
 
-    tm* localTime = timeSetter.getLocalTime();
+    tm* localTime = timeSetter.getAsTm();
     TEST_ASSERT_EQUAL(8, localTime->tm_mon); // September is month 8 because month is 0-indexed
     for (int i = 0; i < 4; i++)
     {
@@ -113,7 +113,7 @@ void test_change_day()
     timeSetter.incrementCursor(); // Move cursor to month
     timeSetter.incrementCursor(); // Move cursor to day
 
-    tm* localTime = timeSetter.getLocalTime();
+    tm* localTime = timeSetter.getAsTm();
     TEST_ASSERT_EQUAL(15, localTime->tm_mday); // Day is 15
     for (int i = 0; i < 16; i++)               // Sepetmber has 30 days, so incrementing 16 times will advnance to October 1st
     {
@@ -136,7 +136,7 @@ void test_change_year()
     timeSetter.incrementCursor(); // Move cursor to day
     timeSetter.incrementCursor(); // Move cursor to year
 
-    tm* localTime = timeSetter.getLocalTime();
+    tm* localTime = timeSetter.getAsTm();
     TEST_ASSERT_EQUAL(120, localTime->tm_year); // Year is 2020, but tm_year is years since 1900, so 2020 - 1900 = 120
     for (int i = 0; i < 5; i++)
     {

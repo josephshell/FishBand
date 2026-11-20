@@ -28,7 +28,7 @@ public:
     /**
      * @brief Returns a pointer to the local time structure based on the current time setting.
      */
-    tm *getLocalTime();
+    tm *getAsTm();
 
     /**
      * @brief Returns positon of the time setter cursor, which indicates which part of the time is currently being set (hour, minute, second, etc.).

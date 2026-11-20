@@ -11,13 +11,9 @@ void TimeSetter::initialize(time_t initialTimeSetting)
     timeCursor = TimeHelpers::HOUR;
 }
 
-tm* TimeSetter::getLocalTime()
+tm *TimeSetter::getAsTm()
 {
-    #if defined(_WIN32)
-        localtime_s(&localTime, &currentTimeSetting);
-    #else
-        localtime_r(&currentTimeSetting, &localTime);
-    #endif
+    TimeHelpers::timestampAsTm(&localTime, currentTimeSetting);
     return &localTime;
 }
 
@@ -38,70 +34,70 @@ void TimeSetter::decrementCursor()
 
 int TimeSetter::incrementTimeSetting()
 {
-    tm* localTimePtr = getLocalTime();
+    tm *localTimePtr = getAsTm();
     int returnValue = 0;
     switch (timeCursor)
     {
-        case TimeHelpers::HOUR:
-            localTimePtr->tm_hour = (localTimePtr->tm_hour + 1) % 24;
-            break;
-        case TimeHelpers::MINUTE:
-            localTimePtr->tm_min = (localTimePtr->tm_min + 1) % 60;
-            break;
-        case TimeHelpers::SECOND:
-            localTimePtr->tm_sec = (localTimePtr->tm_sec + 1) % 60;
-            break;
-        case TimeHelpers::MONTH:
-            localTimePtr->tm_mon = (localTimePtr->tm_mon + 1) % 12;
-            break;
-        case TimeHelpers::DAY:
-            localTimePtr->tm_mday++;
-            break;
-        case TimeHelpers::YEAR:
-            localTimePtr->tm_year++;
-            break;
-        case TimeHelpers::CANCEL:
-            returnValue = -1;
-            break;
-        case TimeHelpers::DONE:
-            returnValue = 1;
-            break;
-        default:
-            break;
+    case TimeHelpers::HOUR:
+        localTimePtr->tm_hour = (localTimePtr->tm_hour + 1) % 24;
+        break;
+    case TimeHelpers::MINUTE:
+        localTimePtr->tm_min = (localTimePtr->tm_min + 1) % 60;
+        break;
+    case TimeHelpers::SECOND:
+        localTimePtr->tm_sec = (localTimePtr->tm_sec + 1) % 60;
+        break;
+    case TimeHelpers::MONTH:
+        localTimePtr->tm_mon = (localTimePtr->tm_mon + 1) % 12;
+        break;
+    case TimeHelpers::DAY:
+        localTimePtr->tm_mday++;
+        break;
+    case TimeHelpers::YEAR:
+        localTimePtr->tm_year++;
+        break;
+    case TimeHelpers::CANCEL:
+        returnValue = -1;
+        break;
+    case TimeHelpers::DONE:
+        returnValue = 1;
+        break;
+    default:
+        break;
     }
-    currentTimeSetting = mktime(localTimePtr);
+    currentTimeSetting = TimeHelpers::tmAsTimestamp(localTimePtr);
     return returnValue;
 }
 
 void TimeSetter::decrementTimeSetting()
 {
-    tm* localTimePtr = getLocalTime();
+    tm *localTimePtr = getAsTm();
     switch (timeCursor)
     {
-        case TimeHelpers::HOUR:
-            localTimePtr->tm_hour = (localTimePtr->tm_hour + 23) % 24;
-            break;
-        case TimeHelpers::MINUTE:
-            localTimePtr->tm_min = (localTimePtr->tm_min + 59) % 60;
-            break;
-        case TimeHelpers::SECOND:
-            localTimePtr->tm_sec = (localTimePtr->tm_sec + 59) % 60;
-            break;
-        case TimeHelpers::MONTH:
-            localTimePtr->tm_mon = (localTimePtr->tm_mon + 11) % 12;
-            break;
-        case TimeHelpers::DAY:
-            localTimePtr->tm_mday--;
-            break;
-        case TimeHelpers::YEAR:
-            localTimePtr->tm_year--;
-            break;
-        case TimeHelpers::CANCEL:
-        case TimeHelpers::DONE:
-            // Handle cancel and done actions, if necessary
-            break;
-        default:
-            break;
+    case TimeHelpers::HOUR:
+        localTimePtr->tm_hour = (localTimePtr->tm_hour + 23) % 24;
+        break;
+    case TimeHelpers::MINUTE:
+        localTimePtr->tm_min = (localTimePtr->tm_min + 59) % 60;
+        break;
+    case TimeHelpers::SECOND:
+        localTimePtr->tm_sec = (localTimePtr->tm_sec + 59) % 60;
+        break;
+    case TimeHelpers::MONTH:
+        localTimePtr->tm_mon = (localTimePtr->tm_mon + 11) % 12;
+        break;
+    case TimeHelpers::DAY:
+        localTimePtr->tm_mday--;
+        break;
+    case TimeHelpers::YEAR:
+        localTimePtr->tm_year--;
+        break;
+    case TimeHelpers::CANCEL:
+    case TimeHelpers::DONE:
+        // Handle cancel and done actions, if necessary
+        break;
+    default:
+        break;
     }
-    currentTimeSetting = mktime(localTimePtr);
+    currentTimeSetting = TimeHelpers::tmAsTimestamp(localTimePtr);
 }
