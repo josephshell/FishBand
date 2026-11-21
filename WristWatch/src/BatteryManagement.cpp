@@ -38,9 +38,9 @@ namespace BatteryManagement
                 Serial.println(pinVal);
                 Serial.print("Battery Level read as: ");
                 Serial.println(batteryLevel);
-                Serial.println("Returning battery level of -1");
+                Serial.println("Returning battery level of 100");
             }
-            batteryLevel = -1;
+            batteryLevel = 100;
         }
         if (batteryLevel < 0)
         {
