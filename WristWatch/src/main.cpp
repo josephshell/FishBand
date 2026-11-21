@@ -7,12 +7,13 @@
 #include <Menu.h>
 #include <Display.h>
 #include <OledDisplay.h>
-#include <WatchFaces.h>
 #include <alarms/AlarmBuilder.h>
 #include <alarms/AlarmManager.h>
 #include <BatteryManagement.h>
 #include <update_agents/UpdateAgents.h>
 #include <set_time/TimeSetter.h>
+#include <vibration_patterns/VibrationPattern.h>
+#include <vibration_handler/VibrationHandler.h>
 
 // TODO: Move state management into a new header
 void changeToState(State newState);
@@ -28,6 +29,9 @@ Alarm alarmBuilderAlarm;
 
 AlarmManager *alarmManager;
 Alarm *activeAlarm;
+
+VibrationPattern *vibration;
+VibrationHandler vibrationHandler = VibrationHandler();
 
 TimeSetter timeSetter;
 
@@ -70,6 +74,8 @@ void setup()
 	display->initialize();
 	tp->initialize();
 	alarmManager = new AlarmManager(tp);
+	vibration = new SteadyVibrationPattern();
+
 
 	UpdateAgents::addAgent("Agent Seconds", 1000, actionsOnTheSecond);
 
@@ -83,9 +89,14 @@ void loop()
 	displayByState();
 	UpdateAgents::pollAgents(currentMillis);
 	pollButtons();
-	if (activeAlarm && state != ALARM_ACTIVE)
+	if (activeAlarm)
 	{
-		changeToState(ALARM_ACTIVE);
+		if (state != ALARM_ACTIVE)
+			changeToState(ALARM_ACTIVE);
+		if (vibration->isActive(currentMillis))
+		{
+			vibrationHandler.startVibration();
+		}
 	}
 }
 
@@ -180,6 +191,7 @@ void configureMenuButtons(Menu &menu)
  */
 void changeToState(State newState)
 {
+	vibrationHandler.stopVibration();
 	resetButtonCallbacks();
 	display->clear();
 	if (alarmBuilder)
