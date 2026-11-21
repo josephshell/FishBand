@@ -10,12 +10,12 @@ const long ONE_HOUR = 3600;
 // Seconds in a day
 const long ONE_DAY = 86400;
 
-    class TestTimeProvider : public TimeProvider
+class TestTimeProvider : public TimeProvider
 {
-    private:
+private:
     time_t currentTime = 0;
-    
-    public:
+
+public:
     void initialize() override {}
 
     time_t getCurrentTime() override
@@ -34,6 +34,22 @@ const long ONE_DAY = 86400;
     }
 };
 
+void assertTriggersAtTime(time_t targetTime, TestTimeProvider &tp, AlarmManager &manager, bool recalculateTriggerAfter = true)
+{
+    tp.changeTimeForTests(targetTime);
+    TEST_ASSERT_FALSE(manager.alarmsMustTrigger().empty());
+    if (recalculateTriggerAfter)
+        manager.recalculateTriggers();
+}
+
+void assertNotTriggersAtTime(time_t targetTime, TestTimeProvider &tp, AlarmManager &manager, bool recalculateTriggerAfter = true)
+{
+    tp.changeTimeForTests(targetTime);
+    TEST_ASSERT_TRUE(manager.alarmsMustTrigger().empty());
+    if (recalculateTriggerAfter)
+        manager.recalculateTriggers();
+}
+
 void setup(void) {}
 
 void tearDown(void) {}
@@ -46,10 +62,9 @@ void alarm_triggers_at_correct_time()
 
     tp.changeTimeForTests(NOON_THURSDAY - ONE_HOUR);
     manager.registerAlarm(noonAlarm);
-    
-    TEST_ASSERT_TRUE(manager.alarmsMustTrigger().empty());
-    tp.changeTimeForTests(NOON_THURSDAY);
-    TEST_ASSERT_FALSE(manager.alarmsMustTrigger().empty());
+
+    assertNotTriggersAtTime(NOON_THURSDAY - ONE_HOUR, tp, manager);
+    assertTriggersAtTime(NOON_THURSDAY, tp, manager);
 }
 
 void everyday_alarms_trigger_everyday()
@@ -60,20 +75,11 @@ void everyday_alarms_trigger_everyday()
 
     tp.changeTimeForTests(NOON_THURSDAY - ONE_HOUR);
     manager.registerAlarm(noonAlarm);
-    // assert alarm not triggered early
-    TEST_ASSERT_TRUE(manager.alarmsMustTrigger().empty());
-    // assert alarm triggers at alarm time
-    tp.changeTimeForTests(NOON_THURSDAY);
-    TEST_ASSERT_FALSE(manager.alarmsMustTrigger().empty());
-    // assert that recalculating triggers causes alarm to disengage
-    manager.recalculateTriggers();
-    TEST_ASSERT_TRUE(manager.alarmsMustTrigger().empty());
-    // assert that alarm doesn't trigger early the next day
-    tp.changeTimeForTests(NOON_THURSDAY + ONE_DAY - ONE_HOUR);
-    TEST_ASSERT_TRUE(manager.alarmsMustTrigger().empty());
-    // assert that alarm triggers on time the next day
-    tp.changeTimeForTests(NOON_THURSDAY + ONE_DAY);
-    TEST_ASSERT_FALSE(manager.alarmsMustTrigger().empty());
+    assertNotTriggersAtTime(NOON_THURSDAY - ONE_HOUR, tp, manager);           // alarm doesn't trigger early
+    assertTriggersAtTime(NOON_THURSDAY, tp, manager);                         // alarm triggers on first day
+    assertNotTriggersAtTime(NOON_THURSDAY, tp, manager);                      // alarm doesn't trigger twice on first day
+    assertNotTriggersAtTime(NOON_THURSDAY + ONE_DAY - ONE_HOUR, tp, manager); // alarm doesn't trigger early the next day
+    assertTriggersAtTime(NOON_THURSDAY + ONE_DAY, tp, manager);               // alarm triggers on time the next day
 }
 
 void one_off_alarms_do_not_retrigger()
@@ -84,17 +90,9 @@ void one_off_alarms_do_not_retrigger()
 
     tp.changeTimeForTests(NOON_THURSDAY - ONE_HOUR);
     manager.registerAlarm(noonAlarm);
-    // assert alarm not triggered early
-    TEST_ASSERT_TRUE(manager.alarmsMustTrigger().empty());
-    // assert alarm triggers at alarm time
-    tp.changeTimeForTests(NOON_THURSDAY);
-    TEST_ASSERT_FALSE(manager.alarmsMustTrigger().empty());
-    // assert that recalculating triggers causes alarm to disengage
-    manager.recalculateTriggers();
-    TEST_ASSERT_TRUE(manager.alarmsMustTrigger().empty());
-    // assert that alarm doesn't trigger the next day
-    tp.changeTimeForTests(NOON_THURSDAY + ONE_DAY);
-    TEST_ASSERT_TRUE(manager.alarmsMustTrigger().empty());
+    assertNotTriggersAtTime(NOON_THURSDAY - ONE_HOUR, tp, manager); // alarm not triggered early
+    assertTriggersAtTime(NOON_THURSDAY, tp, manager);               // alarm triggers at alarm time
+    assertNotTriggersAtTime(NOON_THURSDAY + ONE_DAY, tp, manager);  // assert that alarm doesn't trigger the next day
 }
 
 int main(int argc, char **argv)
