@@ -6,58 +6,66 @@
 
 const long SECONDS_IN_A_DAY = 86400;
 
+bool isValidTriggerDay(tm &alarmTrigger, const AlarmFrequency &freq)
+{
+    switch (freq)
+    {
+    case AlarmFrequency::EVDY:
+        return true;
+    case AlarmFrequency::ONCE:
+        return true;
+    case AlarmFrequency::WKDY:
+        switch (alarmTrigger.tm_wday)
+        {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4: // Su, Mo, Tu, We, Th
+            return true;
+        default:
+            return false;
+        }
+    case AlarmFrequency::WKND:
+        return alarmTrigger.tm_wday == 5 || alarmTrigger.tm_wday == 6; // Fr, Sa
+    default:
+        return true;
+    }
+}
+
+void moveToNextValidDay(tm &alarmTrigger, const Alarm &alarm)
+{
+    do
+    {
+        alarmTrigger.tm_mday += 1;
+        // Normalizes time struct
+        TimeHelpers::tmAsTimestamp(&alarmTrigger);
+    } while (!isValidTriggerDay(alarmTrigger, alarm.freq));
+}
+
 void AlarmWithTime::recalculateTriggerTime(time_t currentTime)
 {
     tm currentLocalTime{};
     TimeHelpers::timestampAsTm(&currentLocalTime, currentTime);
     tm triggerLocalTime{};
     TimeHelpers::timestampAsTm(&triggerLocalTime, nextTriggerTime);
-    switch (alarm.freq)
+
+    while (currentTime >= nextTriggerTime)
     {
-    case EVDY:
-        while (currentTime >= nextTriggerTime)
-        {
-            nextTriggerTime += SECONDS_IN_A_DAY;
-        }
-        break;
-    case WKDY:
-        while (currentTime >= nextTriggerTime)
-        {
-            nextTriggerTime += SECONDS_IN_A_DAY;
-        }
-        TimeHelpers::timestampAsTm(&triggerLocalTime, nextTriggerTime);
-        while (triggerLocalTime.tm_wday > 4) // after thursday
-        {
-            nextTriggerTime += SECONDS_IN_A_DAY;
-            TimeHelpers::timestampAsTm(&triggerLocalTime, nextTriggerTime);
-        }
-    case WKND:
-        while (currentTime >= nextTriggerTime)
-        {
-            nextTriggerTime += SECONDS_IN_A_DAY;
-        }
-        TimeHelpers::timestampAsTm(&triggerLocalTime, nextTriggerTime);
-        while (triggerLocalTime.tm_wday < 5) // before Friday
-        {
-            nextTriggerTime += SECONDS_IN_A_DAY;
-            TimeHelpers::timestampAsTm(&triggerLocalTime, nextTriggerTime);
-        }
-    case ONCE:
-        // DO not retrigger
+        nextTriggerTime += SECONDS_IN_A_DAY;
+    }
+    TimeHelpers::timestampAsTm(&triggerLocalTime, nextTriggerTime);
+    if (alarm.freq == ONCE)
+    {
         enabled = false;
         nextTriggerTime = 0;
-    default:
-        break;
+    }
+    else
+    {
+        moveToNextValidDay(triggerLocalTime, alarm);
     }
 }
 
-void moveToNextValidDay(tm &alarmTrigger, const Alarm &alarm)
-{
-    // TODO: Calculate next valid day based on Frequency and current day setting
-    alarmTrigger.tm_mday += 1;
-    // Normalizes time struct
-    TimeHelpers::tmAsTimestamp(&alarmTrigger);
-}
 
 time_t calculateTriggerTime(time_t currentTime, Alarm alarm)
 {
@@ -78,7 +86,7 @@ time_t calculateTriggerTime(time_t currentTime, Alarm alarm)
     nextTriggerLocalTime.tm_min = alarm.minute;
     nextTriggerLocalTime.tm_sec = 0;
     time_t alarmTriggerTimestamp = TimeHelpers::tmAsTimestamp(&nextTriggerLocalTime);
-    if (alarmTriggerTimestamp < currentTime)
+    if (alarmTriggerTimestamp < currentTime || !isValidTriggerDay(nextTriggerLocalTime, alarm.freq))
     {
         moveToNextValidDay(nextTriggerLocalTime, alarm);
         alarmTriggerTimestamp = TimeHelpers::tmAsTimestamp(&nextTriggerLocalTime);

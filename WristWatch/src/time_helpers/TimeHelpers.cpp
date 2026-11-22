@@ -5,9 +5,9 @@
 
 time_t myTimegm(struct tm *tm);
 
-void TimeHelpers::timestampAsTm(tm *localTime, time_t currentTime)
+void TimeHelpers::timestampAsTm(tm *localTime, time_t timestamp)
 {
-    *localTime = *std::gmtime(&currentTime);
+    *localTime = *std::gmtime(&timestamp);
 }
 
 time_t TimeHelpers::tmAsTimestamp(tm *timeTm)

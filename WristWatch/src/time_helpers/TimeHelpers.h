@@ -18,7 +18,7 @@ namespace TimeHelpers
         SENTINEL // Indicates end of enum, not a valid value
     };
 
-    void timestampAsTm(tm *localTime, time_t currentTime);
+    void timestampAsTm(tm *localTime, time_t timestamp);
 
     time_t tmAsTimestamp(tm *timeTm);
 }
