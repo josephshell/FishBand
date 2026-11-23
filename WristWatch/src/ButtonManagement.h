@@ -22,6 +22,7 @@ bool buttonsConfigured = false;
 void onPressed(uint8_t pin);
 void onReleased(uint8_t pin);
 
+std::function<void()> activityMonitor = nullptr;
 std::function<void()> onPressedCallback[4] = {nullptr, nullptr, nullptr, nullptr};
 std::function<void()> onReleasedCallback[4] = {nullptr, nullptr, nullptr, nullptr};
 
@@ -97,6 +98,7 @@ void pollButtons()
 		{ // debounce button interaction
 			if (digitalRead(buttonPins[i]) == LOW)
 			{ // if button is pressed
+				activityMonitor();
 				if (!buttonPressed[i])
 				{ // and button wasn't pressed before
 					onPressed(buttonPins[i]);

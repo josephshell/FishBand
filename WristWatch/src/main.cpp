@@ -10,15 +10,20 @@
 #include <alarms/AlarmBuilder.h>
 #include <alarms/AlarmManager.h>
 #include <BatteryManagement.h>
-#include <update_agents/UpdateAgents.h>
 #include <set_time/TimeSetter.h>
+#include <sleep/IdleTimer.h>
+#include <update_agents/UpdateAgents.h>
 #include <vibration_patterns/VibrationPattern.h>
 #include <vibration_handler/VibrationHandler.h>
+
+// Time until idle device goes into deep sleep
+const int IDLE_TIMEOUT = 20;
 
 // TODO: Move state management into a new header
 void changeToState(State newState);
 void displayByState();
 void actionsOnTheSecond();
+void goToSleep();
 
 ButtonInterface *b;
 TimeProvider *tp;
@@ -29,6 +34,8 @@ Alarm alarmBuilderAlarm;
 
 AlarmManager *alarmManager;
 Alarm *activeAlarm;
+
+IdleTimer *idleTimer;
 
 VibrationPattern *vibration;
 VibrationHandler vibrationHandler = VibrationHandler();
@@ -75,6 +82,8 @@ void setup()
 	tp->initialize();
 	alarmManager = new AlarmManager(tp);
 	vibration = new SteadyVibrationPattern();
+	idleTimer = new IdleTimer(IDLE_TIMEOUT, tp);
+	activityMonitor = [idleTimer]() { idleTimer->noteActivity(); };
 
 
 	UpdateAgents::addAgent("Agent Seconds", 1000, actionsOnTheSecond);
@@ -120,6 +129,10 @@ void actionsOnTheSecond()
 		Serial.println(alarmString);
 		alarmManager->recalculateTriggers();
 	}
+	if (activeAlarm)
+		idleTimer->noteActivity();
+	if (idleTimer->isUserIdle())
+		goToSleep();
 }
 
 /**
@@ -308,4 +321,9 @@ void changeToState(State newState)
 		Serial.print("Unsupported state? ");
 		Serial.println(newState);
 	}
+}
+
+void goToSleep()
+{
+	Serial.println("Device going to sleep");
 }
