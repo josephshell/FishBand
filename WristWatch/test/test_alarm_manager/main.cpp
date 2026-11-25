@@ -26,6 +26,16 @@ public:
     }
 };
 
+Alarm createAlarm(int hour, int minute, bool isAm, AlarmFrequency freq)
+{
+    Alarm alarm;
+    alarm.hour = hour;
+    alarm.minute = minute;
+    alarm.isMeridiemAm = isAm;
+    alarm.freq = freq;
+    return alarm;
+}
+
 // Thursday, November 19, 2026 at 12:00:00 PM UTC
 const time_t NOON_THURSDAY = 1795089600;
 // Sunday, November 15, 2026 at 12:00:00 PM UTC
@@ -64,7 +74,7 @@ void assertNotTriggersAtTime(time_t targetTime, bool recalculateTriggerAfter = t
 void alarm_triggers_at_correct_time()
 {
     tp.changeTimeForTests(NOON_THURSDAY - ONE_HOUR);
-    Alarm alarm = Alarm(12, 00, false, ONCE);
+    Alarm alarm = createAlarm(12, 00, false, ONCE);
     manager.registerAlarm(alarm);
 
     assertNotTriggersAtTime(NOON_THURSDAY - ONE_HOUR);
@@ -74,7 +84,7 @@ void alarm_triggers_at_correct_time()
 void everyday_alarms_trigger_everyday()
 {
     tp.changeTimeForTests(NOON_THURSDAY - ONE_HOUR);
-    Alarm alarm = Alarm(12, 00, false, EVDY);
+    Alarm alarm = createAlarm(12, 00, false, EVDY);
     manager.registerAlarm(alarm);
     
     assertNotTriggersAtTime(NOON_THURSDAY - ONE_HOUR);           // alarm doesn't trigger early
@@ -87,7 +97,7 @@ void everyday_alarms_trigger_everyday()
 void one_off_alarms_do_not_retrigger()
 {
     tp.changeTimeForTests(NOON_THURSDAY - ONE_HOUR);
-    Alarm alarm = Alarm(12, 00, false, ONCE);
+    Alarm alarm = createAlarm(12, 00, false, ONCE);
     manager.registerAlarm(alarm);
 
     assertNotTriggersAtTime(NOON_THURSDAY - ONE_HOUR); // alarm not triggered early
@@ -98,7 +108,7 @@ void one_off_alarms_do_not_retrigger()
 void workday_alarms_trigger_on_workdays()
 {
     tp.changeTimeForTests(NOON_SUNDAY - ONE_HOUR);
-    Alarm alarm = Alarm(12, 00, false, WKDY);
+    Alarm alarm = createAlarm(12, 00, false, WKDY);
     manager.registerAlarm(alarm);
 
     assertTriggersAtTime(NOON_SUNDAY);               // Sunday
@@ -111,7 +121,7 @@ void workday_alarms_trigger_on_workdays()
 void workday_alarms_do_not_trigger_on_weekend_days()
 {
     tp.changeTimeForTests(NOON_THURSDAY + ONE_HOUR);
-    Alarm alarm = Alarm(12, 00, false, WKDY);
+    Alarm alarm = createAlarm(12, 00, false, WKDY);
     manager.registerAlarm(alarm);
 
     assertNotTriggersAtTime(NOON_THURSDAY + ONE_DAY * 1);   // Friday
