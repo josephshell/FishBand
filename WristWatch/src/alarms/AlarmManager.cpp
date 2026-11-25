@@ -66,7 +66,6 @@ void AlarmWithTime::recalculateTriggerTime(time_t currentTime)
     }
 }
 
-
 time_t calculateTriggerTime(time_t currentTime, Alarm alarm)
 {
     tm currentTimeAsLocal{};
@@ -130,4 +129,26 @@ void AlarmManager::recalculateTriggers()
             alarm.recalculateTriggerTime(tp->getCurrentTime());
         }
     }
+}
+
+time_t AlarmManager::nextTriggerTimestamp()
+{
+    bool triggerFound = false;
+    time_t minimum = 0;
+    for (AlarmWithTime &t : timedAlarms)
+    {
+        if (t.enabled)
+        {
+            if (!triggerFound)
+            {
+                minimum = t.nextTriggerTime;
+                triggerFound = true;
+            }
+            else if (t.nextTriggerTime < minimum)
+            {
+                minimum = t.nextTriggerTime;
+            }
+        }
+    }
+    return minimum;
 }

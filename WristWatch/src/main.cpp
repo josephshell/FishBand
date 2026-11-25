@@ -71,6 +71,8 @@ State state = MAIN_DISPLAY;
 
 void setup()
 {
+	// Cancel any timer wakeups set
+	esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
 	// Configure Serial for logging
 	Serial.begin(9600);
 
@@ -352,10 +354,32 @@ void changeToState(State newState)
 void goToSleep()
 {
 	Serial.println("Device going to sleep");
-	display->clear();
+	display->clear(); // Empty display
+	time_t nextTrigger = alarmManager->nextTriggerTimestamp();
+	if (alarmCount > 0 && nextTrigger != 0)
+	{
+		time_t sleepStartTime = tp->getCurrentTime();
+		time_t secondsUntilAlarm = nextTrigger - sleepStartTime; 
+		if (secondsUntilAlarm < 20) // If less than 20 seconds to alarm
+		{
+			Serial.println("Not sleeping, too close to alarm");
+			idleTimer->noteActivity();
+			return;
+		}
+		Serial.print("Will wake before the alarm that triggers at: ");
+		Serial.print(nextTrigger);
+		Serial.print(". Device will wake in: ");
+		Serial.print(secondsUntilAlarm - 3);
+		Serial.println(" seconds.");
+		// Sleep until 2 seconds before alarm
+		uint64_t usToSleep = (secondsUntilAlarm - 3) * 1000000;
+		esp_sleep_enable_timer_wakeup(usToSleep);
+	}
+	esp_deep_sleep_enable_gpio_wakeup(BIT(D1) + BIT(D2), ESP_GPIO_WAKEUP_GPIO_LOW);
+	
 	// Flush and close serial due to issue with RTC_DATA_ATT saving when connected to serial
 	Serial.flush();
 	Serial.end();
-	esp_deep_sleep_enable_gpio_wakeup(BIT(D1) + BIT(D2), ESP_GPIO_WAKEUP_GPIO_LOW);
+
 	esp_deep_sleep_start();
 }

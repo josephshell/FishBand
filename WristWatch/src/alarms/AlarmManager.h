@@ -53,6 +53,13 @@ public:
      * @brief Recalculates triggers for alarms. For use when triggered alarms have been dealt with.
      */
     void recalculateTriggers();
+
+    /**
+     * @brief Gets the nearest triggering timestamp
+     *
+     * @returns a timestamp for the closest alarm, or 0 if none are triggerable
+     */
+    time_t nextTriggerTimestamp();
 };
 
 #endif
