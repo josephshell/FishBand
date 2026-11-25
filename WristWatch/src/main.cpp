@@ -16,6 +16,11 @@
 #include <vibration_patterns/VibrationPattern.h>
 #include <vibration_handler/VibrationHandler.h>
 
+const int MAX_ALARMS = 8;
+// Sleep stored data
+RTC_DATA_ATTR int alarmCount;
+RTC_DATA_ATTR Alarm storedAlarms[8];
+
 // Time until idle device goes into deep sleep
 const int IDLE_TIMEOUT = 20;
 
@@ -81,10 +86,23 @@ void setup()
 	display->initialize();
 	tp->initialize();
 	alarmManager = new AlarmManager(tp);
+	if (alarmCount > 0)
+	{
+		for (int i = 0; i < alarmCount; i++)
+		{
+			alarmManager->registerAlarm(storedAlarms[i]);
+			char alarmString[32];
+			storedAlarms[i].toString(alarmString, sizeof(alarmString));
+			alarmsMenu.addOption(alarmString, []()
+								 {
+				Serial.print("In alarms menu, selected alarm");
+				changeToState(MAIN_DISPLAY); });
+		}
+	}
 	vibration = new SteadyVibrationPattern();
 	idleTimer = new IdleTimer(IDLE_TIMEOUT, tp);
-	activityMonitor = [idleTimer]() { idleTimer->noteActivity(); };
-
+	activityMonitor = []()
+	{ idleTimer->noteActivity(); };
 
 	UpdateAgents::addAgent("Agent Seconds", 1000, actionsOnTheSecond);
 
@@ -262,12 +280,20 @@ void changeToState(State newState)
 							Serial.println(alarmString);
 							Serial.print("It will trigger at timestamp: ");
 							Serial.println(nextTriggerTime);
-							alarmsMenu.addOption(alarmString, []()
+							if (alarmCount < MAX_ALARMS)
 							{
-								// TODO: Make the function have access to the menu option name
-								Serial.print("In alarms menu, selected alarm");
-								changeToState(MAIN_DISPLAY);
-							});
+								storedAlarms[alarmCount] = newAlarm;
+								alarmCount++;
+								alarmsMenu.addOption(alarmString, []()
+								{
+									// TODO: Make the function have access to the menu option name
+									Serial.print("In alarms menu, selected alarm");
+									changeToState(MAIN_DISPLAY);
+								});
+							} else
+							{
+								Serial.print("Failed to set new alarm, max alarms reached");
+							}
 							Serial.println("Returning to main menu");
 							changeToState(MAIN_MENU);
 						} });
@@ -326,4 +352,10 @@ void changeToState(State newState)
 void goToSleep()
 {
 	Serial.println("Device going to sleep");
+	display->clear();
+	// Flush and close serial due to issue with RTC_DATA_ATT saving when connected to serial
+	Serial.flush();
+	Serial.end();
+	esp_deep_sleep_enable_gpio_wakeup(BIT(D1) + BIT(D2), ESP_GPIO_WAKEUP_GPIO_LOW);
+	esp_deep_sleep_start();
 }
