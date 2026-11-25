@@ -4,7 +4,7 @@
 
 namespace
 {
-    constexpr uint8_t VIBRATION_MOTOR_PIN = D2;
+    constexpr uint8_t VIBRATION_MOTOR_PIN = D7;
 }
 
 VibrationHandler::VibrationHandler()
