@@ -28,3 +28,8 @@ void IdleTimer::noteActivity()
     if (tp)
         internalNoteActivity(lastActivityTime, tp->getCurrentTime());
 }
+
+void IdleTimer::setIdleTimeout(long timeout)
+{
+    idleTimeout = timeout;
+}

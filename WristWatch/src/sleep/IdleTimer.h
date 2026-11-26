@@ -26,6 +26,10 @@ public:
      * @brief Notes activity by the user, restarting the idle timer
      */
     void noteActivity();
+    /**
+     * @brief Sets IdleTimer timeout to [timeout]. Does not itself reset idle time
+     */
+    void setIdleTimeout(long timeout);
 };
 
 #endif

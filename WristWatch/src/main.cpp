@@ -21,8 +21,10 @@ const int MAX_ALARMS = 8;
 RTC_DATA_ATTR int alarmCount;
 RTC_DATA_ATTR Alarm storedAlarms[8];
 
-// Time until idle device goes into deep sleep
-const int IDLE_TIMEOUT = 20;
+// Time until idle device goes into deep sleep in Main display, Main menu, or alarm list
+const int DEFAULT_IDLE_TIMEOUT = 20;
+// Time until idle device goes into deep sleep in other states
+const int LONGER_IDLE_TIMEOUT = 40;
 
 // TODO: Move state management into a new header
 void changeToState(State newState);
@@ -102,7 +104,7 @@ void setup()
 		}
 	}
 	vibration = new SteadyVibrationPattern();
-	idleTimer = new IdleTimer(IDLE_TIMEOUT, tp);
+	idleTimer = new IdleTimer(DEFAULT_IDLE_TIMEOUT, tp);
 	activityMonitor = []()
 	{ idleTimer->noteActivity(); };
 
@@ -224,6 +226,8 @@ void configureMenuButtons(Menu &menu)
  */
 void changeToState(State newState)
 {
+	idleTimer->noteActivity();
+	idleTimer->setIdleTimeout(DEFAULT_IDLE_TIMEOUT);
 	vibrationHandler.stopVibration();
 	resetButtonCallbacks();
 	display->clear();
@@ -260,6 +264,7 @@ void changeToState(State newState)
 
 		break;
 	case MAKE_ALARM:
+		idleTimer->setIdleTimeout(LONGER_IDLE_TIMEOUT);
 		if (!alarmBuilder)
 		{
 			alarmBuilder = new AlarmBuilder();
@@ -303,6 +308,7 @@ void changeToState(State newState)
 					{ Serial.println("In make alarms, SB was pressed"); alarmBuilder->modifySelected(-1); });
 		break;
 	case SET_TIME:
+		idleTimer->setIdleTimeout(LONGER_IDLE_TIMEOUT);
 		timeSetter.initialize(currentTime);
 		setCallback(b->bl(), PRESSED, []()
 					{ Serial.println("SET_TIME BL."); timeSetter.decrementCursor(); });
@@ -324,6 +330,7 @@ void changeToState(State newState)
 					{ Serial.println("SET_TIME SB."); timeSetter.decrementTimeSetting(); });
 		break;
 	case ALARM_ACTIVE:
+		idleTimer->setIdleTimeout(LONGER_IDLE_TIMEOUT);
 		setCallback(b->bl(), PRESSED, []()
 					{ 
 						delete activeAlarm;
@@ -346,6 +353,7 @@ void changeToState(State newState)
 						changeToState(MAIN_DISPLAY); });
 		break;
 	default:
+		idleTimer->setIdleTimeout(LONGER_IDLE_TIMEOUT);
 		Serial.print("Unsupported state? ");
 		Serial.println(newState);
 	}

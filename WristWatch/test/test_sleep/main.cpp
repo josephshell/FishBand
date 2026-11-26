@@ -87,6 +87,18 @@ void users_is_never_inactive_when_time_provider_is_null()
     TEST_ASSERT_FALSE(idleTimer.isUserIdle());
 }
 
+void setting_different_idle_timeout_works()
+{
+    long newTimeout = 400;
+    tp.changeTimeForTests(NOON_THURSDAY);
+    idleTimer.setIdleTimeout(newTimeout);
+    idleTimer.noteActivity();
+    tp.changeTimeForTests(NOON_THURSDAY + 100);
+    TEST_ASSERT_FALSE(idleTimer.isUserIdle());
+    tp.changeTimeForTests(NOON_THURSDAY + newTimeout);
+    TEST_ASSERT_TRUE(idleTimer.isUserIdle());
+}
+
 int main(int argc, char **argv)
 {
     UNITY_BEGIN();
@@ -96,6 +108,7 @@ int main(int argc, char **argv)
     RUN_TEST(first_idle_check_notes_current_time_as_activity);
     RUN_TEST(user_is_not_inactive_when_activity_is_noted_before_timeout);
     RUN_TEST(users_is_never_inactive_when_time_provider_is_null);
+    RUN_TEST(setting_different_idle_timeout_works);
 
     UNITY_END();
 }
