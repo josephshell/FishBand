@@ -230,5 +230,10 @@ public:
 	{
 		u8g2.clear();
 	}
+
+	void disable() override
+	{
+		u8g2.setPowerSave(1);
+	}
 };
 #endif

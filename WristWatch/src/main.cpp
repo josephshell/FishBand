@@ -363,6 +363,7 @@ void goToSleep()
 {
 	Serial.println("Device going to sleep");
 	display->clear(); // Empty display
+	display->disable();
 	time_t nextTrigger = alarmManager->nextTriggerTimestamp();
 	if (alarmCount > 0 && nextTrigger != 0)
 	{

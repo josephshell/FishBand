@@ -27,6 +27,8 @@ public:
 	virtual void runTest() = 0;
 
 	virtual void clear() = 0;
+	
+	virtual void disable() = 0;
 
 	virtual ~Display() = default;
 };
